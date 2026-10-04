@@ -1,37 +1,64 @@
 
 import sys
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QVBoxLayout
+from PyQt6.QtWidgets import (
+    QApplication,
+    QWidget,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QInputDialog,
+    QMessageBox,
+)
+
+gorevler = []
+
+
+
 
 def gorev_ekle():
-    print("Görev Ekle butonuna tıklandı!")
+    while True:
+        gorev, tamam = QInputDialog.getText(
+            pencere,
+            "Yeni Görev",
+            "Görev adını gir:"
+        )
 
-# Uygulamayı başlat
+        if not tamam:
+            return
+
+        gorev = gorev.strip()
+
+        if not gorev:
+            QMessageBox.warning(
+                pencere,
+                "Geçersiz Görev",
+                "Görev adı boş bırakılamaz!"
+            )
+            continue
+
+        gorevler.append(gorev)
+        gorev_listesi.setText("\n".join(gorevler))
+        break
+
+
 app = QApplication(sys.argv)
 
-# Ana pencereyi oluştur
 pencere = QWidget()
 pencere.setWindowTitle("Görev Yöneticisi")
 pencere.resize(600, 400)
 
-# Mücevher bakiyesi yazısı
 bakiye_etiketi = QLabel("💎 Mücevher Bakiyesi: 1320")
-
-# Buton oluştur
 gorev_butonu = QPushButton("Görev Ekle")
+gorev_listesi = QLabel("Henüz görev eklenmedi.")
 
-# Butona tıklama olayını bağla
 gorev_butonu.clicked.connect(gorev_ekle)
 
-# Arayüz düzeni oluştur
 duzen = QVBoxLayout()
 duzen.addWidget(bakiye_etiketi)
 duzen.addWidget(gorev_butonu)
+duzen.addWidget(gorev_listesi)
 
-# Düzeni pencereye bağla
 pencere.setLayout(duzen)
-
-# Pencereyi göster
 pencere.show()
 
-# Uygulamayı çalıştır
 sys.exit(app.exec())
