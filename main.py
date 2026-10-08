@@ -8,11 +8,13 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QInputDialog,
     QMessageBox,
+    QListWidget,
+    QListWidgetItem,
 )
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QFont
 
 gorevler = []
-
-
 
 
 def gorev_ekle():
@@ -37,9 +39,18 @@ def gorev_ekle():
             continue
 
         gorevler.append(gorev)
-        gorev_listesi.setText("\n".join(gorevler))
+
+        item = QListWidgetItem(gorev)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setCheckState(Qt.CheckState.Unchecked)
+        gorev_listesi.addItem(item)
         break
 
+def gorev_durumu_degisti(item):
+    font = item.font()
+    tamamlandi_mi = item.checkState() == Qt.CheckState.Checked
+    font.setStrikeOut(tamamlandi_mi)
+    item.setFont(font)
 
 app = QApplication(sys.argv)
 
@@ -49,7 +60,8 @@ pencere.resize(600, 400)
 
 bakiye_etiketi = QLabel("💎 Mücevher Bakiyesi: 1320")
 gorev_butonu = QPushButton("Görev Ekle")
-gorev_listesi = QLabel("Henüz görev eklenmedi.")
+gorev_listesi = QListWidget()
+gorev_listesi.itemChanged.connect(gorev_durumu_degisti)
 
 gorev_butonu.clicked.connect(gorev_ekle)
 
