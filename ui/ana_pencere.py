@@ -25,14 +25,17 @@ class AnaPencere(QWidget):
             f"💎 Mücevher Bakiyesi: {self.gorev_yonetimi.mucevher_bakiyesi}"
         )
         self.gorev_butonu = QPushButton("Görev Ekle")
+        self.guncelle_butonu = QPushButton("Görev Güncelle")
         self.gorev_listesi = QListWidget()
 
         self.gorev_butonu.clicked.connect(self.gorev_ekle)
+        self.guncelle_butonu.clicked.connect(self.gorev_guncelle)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
 
         duzen = QVBoxLayout()
         duzen.addWidget(self.bakiye_etiketi)
         duzen.addWidget(self.gorev_butonu)
+        duzen.addWidget(self.guncelle_butonu)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
 
@@ -58,6 +61,39 @@ class AnaPencere(QWidget):
             item.setCheckState(Qt.CheckState.Unchecked)
             self.gorev_listesi.addItem(item)
             break
+
+    def gorev_guncelle(self):
+        secili_item = self.gorev_listesi.currentItem()
+        if secili_item is None:
+            QMessageBox.information(
+                self,
+                "Görev Seçilmedi",
+                "Güncellemek için önce bir görev seç."
+            )
+            return
+
+        index = self.gorev_listesi.row(secili_item)
+        mevcut_ad = self.gorev_yonetimi.gorevler[index]
+
+        while True:
+            yeni_ad, tamam = QInputDialog.getText(
+                self,
+                "Görevi Güncelle",
+                "Yeni görev adı:",
+                text=mevcut_ad,
+            )
+
+            if not tamam:
+                return
+
+            try:
+                guncellenen = self.gorev_yonetimi.gorev_guncelle(index, yeni_ad)
+            except ValueError as hata:
+                QMessageBox.warning(self, "Geçersiz Görev", str(hata))
+                continue
+
+            secili_item.setText(guncellenen)
+            break    
 
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()

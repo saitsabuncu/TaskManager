@@ -15,3 +15,14 @@ class GorevYonetimi:
 
         self.gorevler.append(ad)
         return ad
+
+    def gorev_guncelle(self, index: int, yeni_ad: str) -> str:
+        yeni_ad = yeni_ad.strip()
+        if not yeni_ad:
+            raise ValueError("Görev adı boş bırakılamaz!")
+
+        if not (0 <= index < len(self.gorevler)):
+            raise IndexError("Geçersiz görev seçildi.")
+
+        self.gorevler[index] = yeni_ad
+        return yeni_ad
