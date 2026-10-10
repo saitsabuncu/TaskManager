@@ -26,3 +26,9 @@ class GorevYonetimi:
 
         self.gorevler[index] = yeni_ad
         return yeni_ad
+
+    def gorev_sil(self, index: int) -> str:
+        if not (0 <= index < len(self.gorevler)):
+            raise IndexError("Geçersiz görev seçildi.")
+        
+        return self.gorevler.pop(index)
