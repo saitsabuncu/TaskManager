@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from data.veritabani import VeriTabani
+from data.veritabani import VARSAYILAN_KATEGORI, VeriTabani
+
+KATEGORILER = ["Genel", "İş", "Kişisel", "Alışveriş", "Sağlık"]
 
 
 class GorevYonetimi:
@@ -8,7 +10,7 @@ class GorevYonetimi:
 
     Görevler SQLite üzerinden kalıcı olarak saklanır; bu sınıf veritabanı
     katmanıyla UI arasında bir köprü görevi görür. Her görev
-    {"id", "ad", "tamamlandi"} şeklinde bir sözlükle temsil edilir.
+    {"id", "ad", "tamamlandi", "kategori"} şeklinde bir sözlükle temsil edilir.
     """
 
     def __init__(self, veritabani: VeriTabani | None = None, baslangic_bakiyesi: int = 1320):
@@ -19,17 +21,20 @@ class GorevYonetimi:
 
     def yukle(self):
         self.gorevler = [
-            {"id": id_, "ad": ad, "tamamlandi": tamamlandi}
-            for id_, ad, tamamlandi in self.veritabani.tum_gorevleri_getir()
+            {"id": id_, "ad": ad, "tamamlandi": tamamlandi, "kategori": kategori}
+            for id_, ad, tamamlandi, kategori in self.veritabani.tum_gorevleri_getir()
         ]
 
-    def gorev_ekle(self, ad: str) -> dict:
+    def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI) -> dict:
         ad = ad.strip()
         if not ad:
             raise ValueError("Görev adı boş bırakılamaz!")
 
-        gorev_id = self.veritabani.gorev_ekle(ad)
-        gorev = {"id": gorev_id, "ad": ad, "tamamlandi": False}
+        if kategori not in KATEGORILER:
+            kategori = VARSAYILAN_KATEGORI
+
+        gorev_id = self.veritabani.gorev_ekle(ad, kategori)
+        gorev = {"id": gorev_id, "ad": ad, "tamamlandi": False, "kategori": kategori}
         self.gorevler.append(gorev)
         return gorev
 

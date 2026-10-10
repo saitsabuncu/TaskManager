@@ -3,15 +3,19 @@ from PyQt6.QtWidgets import (
     QLabel,
     QPushButton,
     QVBoxLayout,
+    QHBoxLayout,
     QInputDialog,
     QMessageBox,
     QListWidget,
     QListWidgetItem,
+    QComboBox,
 )
 from PyQt6.QtCore import Qt
 
-from logic.gorev_yonetimi import GorevYonetimi
+from logic.gorev_yonetimi import GorevYonetimi, KATEGORILER
 from ui.cop_kutusu_penceresi import CopKutusuPenceresi
+
+TUM_KATEGORILER = "Tümü"
 
 
 class AnaPencere(QWidget):
@@ -31,11 +35,21 @@ class AnaPencere(QWidget):
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
         self.gorev_listesi = QListWidget()
 
+        self.kategori_etiketi = QLabel("Kategori Filtresi:")
+        self.kategori_filtresi = QComboBox()
+        self.kategori_filtresi.addItem(TUM_KATEGORILER)
+        self.kategori_filtresi.addItems(KATEGORILER)
+
         self.gorev_butonu.clicked.connect(self.gorev_ekle)
         self.guncelle_butonu.clicked.connect(self.gorev_guncelle)
         self.sil_butonu.clicked.connect(self.gorev_sil)
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
+        self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
+
+        filtre_duzeni = QHBoxLayout()
+        filtre_duzeni.addWidget(self.kategori_etiketi)
+        filtre_duzeni.addWidget(self.kategori_filtresi)
 
         duzen = QVBoxLayout()
         duzen.addWidget(self.bakiye_etiketi)
@@ -43,6 +57,7 @@ class AnaPencere(QWidget):
         duzen.addWidget(self.guncelle_butonu)
         duzen.addWidget(self.sil_butonu)
         duzen.addWidget(self.cop_kutusu_butonu)
+        duzen.addLayout(filtre_duzeni)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
 
@@ -56,12 +71,18 @@ class AnaPencere(QWidget):
         self.gorev_listesi.blockSignals(True)
         self.gorev_listesi.clear()
         for gorev in self.gorev_yonetimi.gorevler:
-            item = self._liste_ogesi_olustur(gorev["ad"], gorev["tamamlandi"])
+            item = self._liste_ogesi_olustur(
+                gorev["ad"], gorev["tamamlandi"], gorev["kategori"]
+            )
             self.gorev_listesi.addItem(item)
         self.gorev_listesi.blockSignals(False)
+        self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
-    def _liste_ogesi_olustur(self, ad: str, tamamlandi: bool) -> QListWidgetItem:
-        item = QListWidgetItem(ad)
+    def _liste_ogesi_olustur(
+        self, ad: str, tamamlandi: bool, kategori: str
+    ) -> QListWidgetItem:
+        item = QListWidgetItem(f"{ad}  [{kategori}]")
+        item.setData(Qt.ItemDataRole.UserRole, kategori)
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(
             Qt.CheckState.Checked if tamamlandi else Qt.CheckState.Unchecked
@@ -71,6 +92,13 @@ class AnaPencere(QWidget):
             font.setStrikeOut(True)
             item.setFont(font)
         return item
+
+    def filtreyi_uygula(self, secilen_kategori: str):
+        for i in range(self.gorev_listesi.count()):
+            item = self.gorev_listesi.item(i)
+            kategori = item.data(Qt.ItemDataRole.UserRole)
+            gizli = secilen_kategori != TUM_KATEGORILER and kategori != secilen_kategori
+            item.setHidden(gizli)
 
     def gorev_ekle(self):
         while True:
@@ -83,14 +111,28 @@ class AnaPencere(QWidget):
             if not tamam:
                 return
 
+            kategori, kategori_tamam = QInputDialog.getItem(
+                self,
+                "Kategori Seç",
+                "Görevin kategorisi:",
+                KATEGORILER,
+                0,
+                False,
+            )
+            if not kategori_tamam:
+                kategori = KATEGORILER[0]
+
             try:
-                eklenen = self.gorev_yonetimi.gorev_ekle(gorev)
+                eklenen = self.gorev_yonetimi.gorev_ekle(gorev, kategori)
             except ValueError as hata:
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
 
-            item = self._liste_ogesi_olustur(eklenen["ad"], eklenen["tamamlandi"])
+            item = self._liste_ogesi_olustur(
+                eklenen["ad"], eklenen["tamamlandi"], eklenen["kategori"]
+            )
             self.gorev_listesi.addItem(item)
+            self.filtreyi_uygula(self.kategori_filtresi.currentText())
             break
 
     def gorev_guncelle(self):
@@ -105,6 +147,7 @@ class AnaPencere(QWidget):
 
         index = self.gorev_listesi.row(secili_item)
         mevcut_ad = self.gorev_yonetimi.gorevler[index]["ad"]
+        kategori = self.gorev_yonetimi.gorevler[index]["kategori"]
 
         while True:
             yeni_ad, tamam = QInputDialog.getText(
@@ -123,7 +166,7 @@ class AnaPencere(QWidget):
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
 
-            secili_item.setText(guncellenen)
+            secili_item.setText(f"{guncellenen}  [{kategori}]")
             break
 
     def gorev_sil(self):
@@ -161,7 +204,6 @@ class AnaPencere(QWidget):
         # Çöp kutusundan geri yükleme sonrası listeyi yenile
         if pencere.degisiklik_oldu:
             self._listeyi_yenile()
-         
 
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()

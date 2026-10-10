@@ -5,6 +5,7 @@ from pathlib import Path
 
 VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
 COP_KUTUSU_SAKLAMA_GUNU = 30
+VARSAYILAN_KATEGORI = "Genel"
 
 
 class VeriTabani:
@@ -38,20 +39,26 @@ class VeriTabani:
                     ad TEXT NOT NULL,
                     tamamlandi INTEGER NOT NULL DEFAULT 0,
                     olusturulma_tarihi TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    silinme_tarihi TEXT
+                    silinme_tarihi TEXT,
+                    kategori TEXT NOT NULL DEFAULT 'Genel'
                 )
                 """
             )
 
-            # Bu sütun daha sonra eklendi; önceden oluşturulmuş eski
-            # veritabanı dosyalarında (silinme_tarihi olmadan) bozulmadan
-            # çalışabilmek için eksikse burada ekleniyor.
+            # Bu sütunlar daha sonra eklendi; önceden oluşturulmuş eski
+            # veritabanı dosyalarında bozulmadan çalışabilmek için
+            # eksikse burada ekleniyor.
             sutunlar = {
                 satir[1]
                 for satir in baglanti.execute("PRAGMA table_info(gorevler)").fetchall()
             }
             if "silinme_tarihi" not in sutunlar:
                 baglanti.execute("ALTER TABLE gorevler ADD COLUMN silinme_tarihi TEXT")
+            if "kategori" not in sutunlar:
+                baglanti.execute(
+                    f"ALTER TABLE gorevler ADD COLUMN kategori TEXT "
+                    f"NOT NULL DEFAULT '{VARSAYILAN_KATEGORI}'"
+                )    
 
     def _eski_silinenleri_temizle(self):
         with self._baglanti_ac() as baglanti:
@@ -64,19 +71,20 @@ class VeriTabani:
                 (f"-{COP_KUTUSU_SAKLAMA_GUNU} days",),
             )
 
-    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool]]:
+    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str]]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
                 "SELECT id, ad, tamamlandi FROM gorevler "
                 "WHERE silinme_tarihi IS NULL ORDER BY id ASC"
             ).fetchall()
-        return [(id_, ad, bool(tamamlandi)) for id_, ad, tamamlandi in satirlar]
+        return [(id_, ad, bool(tamamlandi), kategori)
+                for id_, ad, tamamlandi, kategori in satirlar]
 
-    def gorev_ekle(self, ad: str) -> int:
+    def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI) -> int:
         with self._baglanti_ac() as baglanti:
             imlec = baglanti.execute(
-                "INSERT INTO gorevler (ad, tamamlandi) VALUES (?, 0)",
-                (ad,),
+                "INSERT INTO gorevler (ad, tamamlandi, kategori) VALUES (?, 0, ?)",
+                (ad, kategori),
             )
             return imlec.lastrowid
 
