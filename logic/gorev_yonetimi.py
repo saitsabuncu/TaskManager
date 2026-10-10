@@ -61,3 +61,16 @@ class GorevYonetimi:
         gorev = self.gorevler[index]
         self.veritabani.gorev_durumu_guncelle(gorev["id"], tamamlandi)
         gorev["tamamlandi"] = tamamlandi
+
+    def cop_kutusunu_getir(self) -> list[dict]:
+        return [
+            {"id": id_, "ad": ad, "silinme_tarihi": silinme_tarihi}
+            for id_, ad, silinme_tarihi in self.veritabani.cop_kutusunu_getir()
+        ]
+
+    def gorev_geri_yukle(self, gorev_id: int):
+        self.veritabani.gorev_geri_yukle(gorev_id)
+        self.yukle()
+
+    def gorev_kalici_sil(self, gorev_id: int):
+        self.veritabani.gorev_kalici_sil(gorev_id)        

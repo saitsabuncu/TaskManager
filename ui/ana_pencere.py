@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtCore import Qt
 
 from logic.gorev_yonetimi import GorevYonetimi
+from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 
 
 class AnaPencere(QWidget):
@@ -27,11 +28,13 @@ class AnaPencere(QWidget):
         self.gorev_butonu = QPushButton("Görev Ekle")
         self.guncelle_butonu = QPushButton("Görev Güncelle")
         self.sil_butonu = QPushButton("Görev Sil")
+        self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
         self.gorev_listesi = QListWidget()
 
         self.gorev_butonu.clicked.connect(self.gorev_ekle)
         self.guncelle_butonu.clicked.connect(self.gorev_guncelle)
         self.sil_butonu.clicked.connect(self.gorev_sil)
+        self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
 
         duzen = QVBoxLayout()
@@ -39,16 +42,19 @@ class AnaPencere(QWidget):
         duzen.addWidget(self.gorev_butonu)
         duzen.addWidget(self.guncelle_butonu)
         duzen.addWidget(self.sil_butonu)
+        duzen.addWidget(self.cop_kutusu_butonu)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
 
-        self._kayitli_gorevleri_listeye_yukle()
+        self._listeyi_yenile()
 
-    def _kayitli_gorevleri_listeye_yukle(self):
-        # Veritabanından önceden yüklenen görevleri listeye ekler.
-        # itemChanged sinyalinin bu sırada tetiklenip gereksiz
-        # veritabanı yazısı yapmaması için sinyalleri geçici kapatıyoruz.
+    def _listeyi_yenile(self):
+        # Listeyi gorev_yonetimi.gorevler ile tamamen yeniden doldurur
+        # (ilk açılışta ve çöp kutusundan geri yükleme sonrası kullanılır).
+        # itemChanged sinyalinin bu sırada tetiklenip gereksiz veritabanı
+        # yazısı yapmaması için sinyalleri geçici kapatıyoruz.
         self.gorev_listesi.blockSignals(True)
+        self.gorev_listesi.clear()
         for gorev in self.gorev_yonetimi.gorevler:
             item = self._liste_ogesi_olustur(gorev["ad"], gorev["tamamlandi"])
             self.gorev_listesi.addItem(item)
@@ -136,7 +142,8 @@ class AnaPencere(QWidget):
         onay = QMessageBox.question(
             self,
             "Görevi Sil",
-            f'"{gorev_adi}" görevini silmek istediğine emin misin?',
+            f'"{gorev_adi}" görevi çöp kutusuna taşınacak (30 gün saklanır). '
+            "Devam edilsin mi?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -146,6 +153,15 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_sil(index)
         self.gorev_listesi.takeItem(index)
+
+    def cop_kutusunu_ac(self):
+        pencere = CopKutusuPenceresi(self.gorev_yonetimi, self)
+        pencere.exec()
+
+        # Çöp kutusundan geri yükleme sonrası listeyi yenile
+        if pencere.degisiklik_oldu:
+            self._listeyi_yenile()
+         
 
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()
