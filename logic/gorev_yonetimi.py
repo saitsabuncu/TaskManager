@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from data.veritabani import VeriTabani
 
+GOREV_TAMAMLAMA_ODULU = 10
+
 
 class GorevYonetimi:
     """Görev listesi ve mücevher bakiyesi gibi uygulama mantığını yönetir.
@@ -13,15 +15,24 @@ class GorevYonetimi:
     Kategoriler artık veritabanında saklanır (sabit bir Python listesi
     değil), böylece kullanıcı kategori adlarını yeniden adlandırabilir ve
     bu değişiklik ilgili tüm görevlere yansır.
+
+    Mücevher bakiyesi de veritabanında kalıcı olarak saklanır. Bir görev
+    tamamlandı olarak işaretlendiğinde GOREV_TAMAMLAMA_ODULU kadar mücevher
+    kazanılır; işaret kaldırılırsa aynı miktar geri alınır. Böylece bir
+    görevi işaretleyip kaldırarak bakiye sınırsızca artırılamaz.
     """
 
-    def __init__(self, veritabani: VeriTabani | None = None, baslangic_bakiyesi: int = 1320):
+    def __init__(self, veritabani: VeriTabani | None = None):
         self.veritabani = veritabani or VeriTabani()
         self.gorevler: list[dict] = []
         self.kategoriler: list[str] = []
-        self.mucevher_bakiyesi = baslangic_bakiyesi
+        self.mucevher_bakiyesi = 0
         self.kategorileri_yukle()
         self.yukle()
+        self.bakiyeyi_yukle()
+
+    def bakiyeyi_yukle(self):
+        self.mucevher_bakiyesi = self.veritabani.bakiye_getir()
 
     def yukle(self):
         self.gorevler = [
@@ -72,8 +83,20 @@ class GorevYonetimi:
             raise IndexError("Geçersiz görev seçildi.")
 
         gorev = self.gorevler[index]
+        onceki_durum = gorev["tamamlandi"]
+
         self.veritabani.gorev_durumu_guncelle(gorev["id"], tamamlandi)
         gorev["tamamlandi"] = tamamlandi
+
+        # Bakiye sadece durum gerçekten değiştiğinde güncellenir; aynı
+        # duruma tekrar set edilmesi (örn. listeyi_yenile sırasında) mükerrer
+        # mücevher kazandırmaz veya eksiltmez.
+        if tamamlandi and not onceki_durum:
+            self.mucevher_bakiyesi += GOREV_TAMAMLAMA_ODULU
+            self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
+        elif not tamamlandi and onceki_durum:
+            self.mucevher_bakiyesi -= GOREV_TAMAMLAMA_ODULU
+            self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
 
     def gorev_kategorisini_degistir(self, index: int, yeni_kategori: str):
         if not (0 <= index < len(self.gorevler)):

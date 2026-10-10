@@ -37,6 +37,19 @@ class AnaPencere(QWidget):
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
         self.gorev_listesi = QListWidget()
+        self.gorev_listesi.setStyleSheet(
+            """
+            QListWidget::item:selected {
+                background-color: #3b82f6;
+                color: white;
+            }
+            QListWidget::item:selected:!active {
+                background-color: #93c5fd;
+                color: black;
+            }
+            """
+        )
+
 
         self.kategori_etiketi = QLabel("Kategori Filtresi:")
         self.kategori_filtresi = QComboBox()
@@ -282,3 +295,9 @@ class AnaPencere(QWidget):
 
         index = self.gorev_listesi.row(item)
         self.gorev_yonetimi.gorev_tamamlanma_degistir(index, tamamlandi_mi)
+        self._bakiye_etiketini_guncelle()
+
+    def _bakiye_etiketini_guncelle(self):
+        self.bakiye_etiketi.setText(
+            f"💎 Mücevher Bakiyesi: {self.gorev_yonetimi.mucevher_bakiyesi}"
+        )    

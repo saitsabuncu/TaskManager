@@ -29,15 +29,16 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Silinen görevlerin Çöp Kutusu'nda 30 gün saklanması (geri yükleme / kalıcı silme, otomatik temizlik)
 * [x] SQLite veritabanı ile kalıcı saklama
 * [x] Görevleri kategorilere ayırma (Genel, İş, Kişisel, Alışveriş, Sağlık) ve kategoriye göre filtreleme
+* [x] Görevi başka bir kategoriye taşıma
+* [x] Kategori adlarını düzenleme (yeniden adlandırma)
+* [x] Mücevher kazanma sistemi (görev tamamlandığında mücevher kazanılır, işaret kaldırılınca geri alınır)
+* [x] Görev listesinde seçili satırın renkle belirginleştirilmesi
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
 
 ## 🚧 Planlanan Özellikler
 
-* [ ] Görevi başka bir kategoriye taşıma
-* [ ] Kategori adlarını düzenleme
-* [ ] Mücevher kazanma sistemi
 * [ ] Mücevher harcama sistemi
 * [ ] Mağaza
 * [ ] İşlem geçmişi
@@ -85,7 +86,8 @@ TaskManager/
 ├── main.py                     # Uygulamanın başlangıç dosyası
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
-│   └── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
+│   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
+│   └── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
 ├── logic/                      # İş mantığı katmanı
 │   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi
 ├── data/                       # Veri erişim katmanı

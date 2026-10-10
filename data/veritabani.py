@@ -7,6 +7,7 @@ VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
 COP_KUTUSU_SAKLAMA_GUNU = 30
 VARSAYILAN_KATEGORI = "Genel"
 VARSAYILAN_KATEGORILER = ["Genel", "İş", "Kişisel", "Alışveriş", "Sağlık"]
+VARSAYILAN_MUCEVHER_BAKIYESI = 1320
 
 
 class VeriTabani:
@@ -25,6 +26,7 @@ class VeriTabani:
         self.db_yolu = str(db_yolu)
         self._tablolari_olustur()
         self._varsayilan_kategorileri_ekle()
+        self._varsayilan_bakiyeyi_ekle()
         self._eski_silinenleri_temizle()
 
     def _baglanti_ac(self) -> sqlite3.Connection:
@@ -54,6 +56,14 @@ class VeriTabani:
                 )
                 """
             )
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS bakiye (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    mucevher INTEGER NOT NULL
+                )
+                """
+            )
 
             # Bu sütunlar daha sonra eklendi; önceden oluşturulmuş eski
             # veritabanı dosyalarında bozulmadan çalışabilmek için
@@ -77,6 +87,15 @@ class VeriTabani:
                 baglanti.executemany(
                     "INSERT INTO kategoriler (ad) VALUES (?)",
                     [(ad,) for ad in VARSAYILAN_KATEGORILER],
+                )
+
+    def _varsayilan_bakiyeyi_ekle(self):
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute("SELECT mucevher FROM bakiye WHERE id = 1").fetchone()
+            if satir is None:
+                baglanti.execute(
+                    "INSERT INTO bakiye (id, mucevher) VALUES (1, ?)",
+                    (VARSAYILAN_MUCEVHER_BAKIYESI,),
                 )
 
     def _eski_silinenleri_temizle(self):
@@ -174,4 +193,15 @@ class VeriTabani:
             baglanti.execute(
                 "UPDATE gorevler SET kategori = ? WHERE kategori = ?",
                 (yeni_ad, eski_ad),
+            )
+
+    def bakiye_getir(self) -> int:
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute("SELECT mucevher FROM bakiye WHERE id = 1").fetchone()
+        return satir[0] if satir is not None else VARSAYILAN_MUCEVHER_BAKIYESI
+
+    def bakiye_guncelle(self, yeni_bakiye: int):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE bakiye SET mucevher = ? WHERE id = 1", (yeni_bakiye,)
             )
