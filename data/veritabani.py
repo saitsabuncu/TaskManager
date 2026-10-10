@@ -58,7 +58,7 @@ class VeriTabani:
                 baglanti.execute(
                     f"ALTER TABLE gorevler ADD COLUMN kategori TEXT "
                     f"NOT NULL DEFAULT '{VARSAYILAN_KATEGORI}'"
-                )    
+                )
 
     def _eski_silinenleri_temizle(self):
         with self._baglanti_ac() as baglanti:
@@ -74,11 +74,13 @@ class VeriTabani:
     def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str]]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
-                "SELECT id, ad, tamamlandi FROM gorevler "
+                "SELECT id, ad, tamamlandi, kategori FROM gorevler "
                 "WHERE silinme_tarihi IS NULL ORDER BY id ASC"
             ).fetchall()
-        return [(id_, ad, bool(tamamlandi), kategori)
-                for id_, ad, tamamlandi, kategori in satirlar]
+        return [
+            (id_, ad, bool(tamamlandi), kategori)
+            for id_, ad, tamamlandi, kategori in satirlar
+        ]
 
     def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI) -> int:
         with self._baglanti_ac() as baglanti:
