@@ -42,6 +42,30 @@ class AnaPencere(QWidget):
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
 
+        self._kayitli_gorevleri_listeye_yukle()
+
+    def _kayitli_gorevleri_listeye_yukle(self):
+        # Veritabanından önceden yüklenen görevleri listeye ekler.
+        # itemChanged sinyalinin bu sırada tetiklenip gereksiz
+        # veritabanı yazısı yapmaması için sinyalleri geçici kapatıyoruz.
+        self.gorev_listesi.blockSignals(True)
+        for gorev in self.gorev_yonetimi.gorevler:
+            item = self._liste_ogesi_olustur(gorev["ad"], gorev["tamamlandi"])
+            self.gorev_listesi.addItem(item)
+        self.gorev_listesi.blockSignals(False)
+
+    def _liste_ogesi_olustur(self, ad: str, tamamlandi: bool) -> QListWidgetItem:
+        item = QListWidgetItem(ad)
+        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        item.setCheckState(
+            Qt.CheckState.Checked if tamamlandi else Qt.CheckState.Unchecked
+        )
+        if tamamlandi:
+            font = item.font()
+            font.setStrikeOut(True)
+            item.setFont(font)
+        return item
+
     def gorev_ekle(self):
         while True:
             gorev, tamam = QInputDialog.getText(
@@ -59,9 +83,7 @@ class AnaPencere(QWidget):
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
 
-            item = QListWidgetItem(eklenen)
-            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-            item.setCheckState(Qt.CheckState.Unchecked)
+            item = self._liste_ogesi_olustur(eklenen["ad"], eklenen["tamamlandi"])
             self.gorev_listesi.addItem(item)
             break
 
@@ -76,7 +98,7 @@ class AnaPencere(QWidget):
             return
 
         index = self.gorev_listesi.row(secili_item)
-        mevcut_ad = self.gorev_yonetimi.gorevler[index]
+        mevcut_ad = self.gorev_yonetimi.gorevler[index]["ad"]
 
         while True:
             yeni_ad, tamam = QInputDialog.getText(
@@ -96,7 +118,7 @@ class AnaPencere(QWidget):
                 continue
 
             secili_item.setText(guncellenen)
-            break    
+            break
 
     def gorev_sil(self):
         secili_item = self.gorev_listesi.currentItem()
@@ -107,24 +129,29 @@ class AnaPencere(QWidget):
                 "Silmek için önce bir görev seç."
             )
             return
+
         index = self.gorev_listesi.row(secili_item)
-        gorev_adi = self.gorev_yonetimi.gorevler[index]
+        gorev_adi = self.gorev_yonetimi.gorevler[index]["ad"]
 
         onay = QMessageBox.question(
             self,
             "Görevi Sil",
-            f"'{gorev_adi}' görevini silmek istediğine emin misin?",
+            f'"{gorev_adi}" görevini silmek istediğine emin misin?',
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
 
         if onay != QMessageBox.StandardButton.Yes:
             return
+
         self.gorev_yonetimi.gorev_sil(index)
         self.gorev_listesi.takeItem(index)
-        
+
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()
         tamamlandi_mi = item.checkState() == Qt.CheckState.Checked
         font.setStrikeOut(tamamlandi_mi)
         item.setFont(font)
+
+        index = self.gorev_listesi.row(item)
+        self.gorev_yonetimi.gorev_tamamlanma_degistir(index, tamamlandi_mi)
