@@ -44,6 +44,10 @@ class VeriTabani:
                     silinme_tarihi TEXT,
                     kategori TEXT NOT NULL DEFAULT 'Genel'
                 )
+                """
+            )
+            baglanti.execute(
+                """
                 CREATE TABLE IF NOT EXISTS kategoriler (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ad TEXT NOT NULL UNIQUE
@@ -74,6 +78,7 @@ class VeriTabani:
                     "INSERT INTO kategoriler (ad) VALUES (?)",
                     [(ad,) for ad in VARSAYILAN_KATEGORILER],
                 )
+
     def _eski_silinenleri_temizle(self):
         with self._baglanti_ac() as baglanti:
             baglanti.execute(
@@ -147,7 +152,8 @@ class VeriTabani:
     def kategorileri_getir(self) -> list[str]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
-                "SELECT ad FROM kategoriler ORDER BY id ASC").fetchall()
+                "SELECT ad FROM kategoriler ORDER BY id ASC"
+            ).fetchall()
         return [ad for (ad,) in satirlar]
 
     def gorev_kategorisini_degistir(self, gorev_id: int, yeni_kategori: str):
@@ -168,4 +174,4 @@ class VeriTabani:
             baglanti.execute(
                 "UPDATE gorevler SET kategori = ? WHERE kategori = ?",
                 (yeni_ad, eski_ad),
-            )        
+            )
