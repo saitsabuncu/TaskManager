@@ -6,6 +6,7 @@ from pathlib import Path
 VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
 COP_KUTUSU_SAKLAMA_GUNU = 30
 VARSAYILAN_KATEGORI = "Genel"
+VARSAYILAN_KATEGORILER = ["Genel", "İş", "Kişisel", "Alışveriş", "Sağlık"]
 
 
 class VeriTabani:
@@ -23,6 +24,7 @@ class VeriTabani:
     def __init__(self, db_yolu: Path | str = VARSAYILAN_DB_YOLU):
         self.db_yolu = str(db_yolu)
         self._tablolari_olustur()
+        self._varsayilan_kategorileri_ekle()
         self._eski_silinenleri_temizle()
 
     def _baglanti_ac(self) -> sqlite3.Connection:
@@ -42,6 +44,10 @@ class VeriTabani:
                     silinme_tarihi TEXT,
                     kategori TEXT NOT NULL DEFAULT 'Genel'
                 )
+                CREATE TABLE IF NOT EXISTS kategoriler (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ad TEXT NOT NULL UNIQUE
+                )
                 """
             )
 
@@ -60,6 +66,14 @@ class VeriTabani:
                     f"NOT NULL DEFAULT '{VARSAYILAN_KATEGORI}'"
                 )
 
+    def _varsayilan_kategorileri_ekle(self):
+        with self._baglanti_ac() as baglanti:
+            (sayi,) = baglanti.execute("SELECT COUNT(*) FROM kategoriler").fetchone()
+            if sayi == 0:
+                baglanti.executemany(
+                    "INSERT INTO kategoriler (ad) VALUES (?)",
+                    [(ad,) for ad in VARSAYILAN_KATEGORILER],
+                )
     def _eski_silinenleri_temizle(self):
         with self._baglanti_ac() as baglanti:
             baglanti.execute(
@@ -129,3 +143,29 @@ class VeriTabani:
     def gorev_kalici_sil(self, gorev_id: int):
         with self._baglanti_ac() as baglanti:
             baglanti.execute("DELETE FROM gorevler WHERE id = ?", (gorev_id,))
+
+    def kategorileri_getir(self) -> list[str]:
+        with self._baglanti_ac() as baglanti:
+            satirlar = baglanti.execute(
+                "SELECT ad FROM kategoriler ORDER BY id ASC").fetchall()
+        return [ad for (ad,) in satirlar]
+
+    def gorev_kategorisini_degistir(self, gorev_id: int, yeni_kategori: str):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE gorevler SET kategori = ? WHERE id = ?",
+                (yeni_kategori, gorev_id),
+            )
+
+    def kategori_adi_guncelle(self, eski_ad: str, yeni_ad: str):
+        """Kategoriyi yeniden adlandırır; o kategorideki tüm görevlerin
+        (aktif ve çöp kutusundakiler dahil) kategori alanını da günceller.
+        """
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE kategoriler SET ad = ? WHERE ad = ?", (yeni_ad, eski_ad)
+            )
+            baglanti.execute(
+                "UPDATE gorevler SET kategori = ? WHERE kategori = ?",
+                (yeni_ad, eski_ad),
+            )        
