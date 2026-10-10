@@ -14,31 +14,33 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 
 * Python
 * PyQt6
-* SQLite *(planlanıyor)*
+* SQLite
 * Git / GitHub
 
 ## 📌 Mevcut Özellikler
 
 * [x] PyQt6 uygulama penceresi
 * [x] Mücevher bakiyesinin gösterilmesi
-* [x] Görev Ekle butonu
-* [x] Buton tıklama olayının oluşturulması
+* [x] Görev ekleme arayüzü
+* [x] Görev listesi (QListWidget)
+* [x] Görev tamamlama (onay kutusu, üstü çizili gösterim)
+* [x] Görev güncelleme
+* [x] Görev silme
+* [x] Silinen görevlerin Çöp Kutusu'nda 30 gün saklanması (geri yükleme / kalıcı silme, otomatik temizlik)
+* [x] SQLite veritabanı ile kalıcı saklama
+* [x] Görevleri kategorilere ayırma (Genel, İş, Kişisel, Alışveriş, Sağlık) ve kategoriye göre filtreleme
+* [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
 
 ## 🚧 Planlanan Özellikler
 
-* [ ] Görev ekleme arayüzü
-* [ ] Görev listesi
-* [ ] Görev tamamlama
+* [ ] Görevi başka bir kategoriye taşıma
+* [ ] Kategori adlarını düzenleme
 * [ ] Mücevher kazanma sistemi
 * [ ] Mücevher harcama sistemi
 * [ ] Mağaza
 * [ ] İşlem geçmişi
-* [ ] Görev güncelleme
-* [ ] Görev silme
-* [ ] Silinen görevlerin 30 gün saklanması
-* [ ] SQLite veritabanı
 * [ ] İstatistik ve grafikler
 * [ ] Modern kullanıcı arayüzü
 * [ ] Ollama entegrasyonu
@@ -71,15 +73,25 @@ Uygulamayı çalıştırın:
 python main.py
 ```
 
+Uygulama ilk çalıştırmada proje klasöründe `gorevler.db` adlı bir SQLite veritabanı dosyası oluşturur (bu dosya Git'e dahil edilmez).
+
 ## 📁 Proje Yapısı
 
 ```text
 TaskManager/
 │
-├── .venv/          # Sanal Python ortamı
-├── .gitignore      # Git tarafından yok sayılan dosyalar
-├── main.py         # Uygulamanın başlangıç dosyası
-└── README.md       # Proje açıklaması
+├── .venv/                      # Sanal Python ortamı
+├── .gitignore                  # Git tarafından yok sayılan dosyalar
+├── main.py                     # Uygulamanın başlangıç dosyası
+├── ui/                         # Arayüz katmanı
+│   ├── ana_pencere.py          # Ana pencere (AnaPencere)
+│   └── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
+├── logic/                      # İş mantığı katmanı
+│   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi
+├── data/                       # Veri erişim katmanı
+│   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
+├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
+└── README.md                   # Proje açıklaması
 ```
 
 ## 📈 Geliştirme Süreci
