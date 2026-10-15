@@ -27,12 +27,25 @@ class GorevYonetimi:
         self.gorevler: list[dict] = []
         self.kategoriler: list[str] = []
         self.mucevher_bakiyesi = 0
+        self.kullanici_adi: str | None = None
         self.kategorileri_yukle()
         self.yukle()
         self.bakiyeyi_yukle()
+        self.kullanici_adini_yukle()
 
     def bakiyeyi_yukle(self):
         self.mucevher_bakiyesi = self.veritabani.bakiye_getir()
+
+    def kullanici_adini_yukle(self):
+        self.kullanici_adi = self.veritabani.kullanici_adini_getir()
+
+    def kullanici_adini_kaydet(self, ad: str):
+        ad = ad.strip()
+        if not ad:
+            raise ValueError("Adınız boş bırakılamaz!")
+
+        self.veritabani.kullanici_adini_kaydet(ad)
+        self.kullanici_adi = ad
 
     def yukle(self):
         self.gorevler = [

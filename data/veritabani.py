@@ -64,6 +64,14 @@ class VeriTabani:
                 )
                 """
             )
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS kullanici (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    ad TEXT NOT NULL
+                )
+                """
+            )
 
             # Bu sütunlar daha sonra eklendi; önceden oluşturulmuş eski
             # veritabanı dosyalarında bozulmadan çalışabilmek için
@@ -204,4 +212,17 @@ class VeriTabani:
         with self._baglanti_ac() as baglanti:
             baglanti.execute(
                 "UPDATE bakiye SET mucevher = ? WHERE id = 1", (yeni_bakiye,)
+            )
+
+    def kullanici_adini_getir(self) -> str | None:
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute("SELECT ad FROM kullanici WHERE id = 1").fetchone()
+        return satir[0] if satir is not None else None
+
+    def kullanici_adini_kaydet(self, ad: str):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "INSERT INTO kullanici (id, ad) VALUES (1, ?) "
+                "ON CONFLICT (id) DO UPDATE SET ad = excluded.ad",
+                (ad,),
             )
