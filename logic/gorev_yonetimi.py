@@ -26,12 +26,14 @@ class GorevYonetimi:
         self.veritabani = veritabani or VeriTabani()
         self.gorevler: list[dict] = []
         self.kategoriler: list[str] = []
+        self.oduller: list[dict] = []
         self.mucevher_bakiyesi = 0
         self.kullanici_adi: str | None = None
         self.kategorileri_yukle()
         self.yukle()
         self.bakiyeyi_yukle()
         self.kullanici_adini_yukle()
+        self.odulleri_yukle()
 
     def bakiyeyi_yukle(self):
         self.mucevher_bakiyesi = self.veritabani.bakiye_getir()
@@ -154,3 +156,67 @@ class GorevYonetimi:
 
     def gorev_kalici_sil(self, gorev_id: int):
         self.veritabani.gorev_kalici_sil(gorev_id)
+
+    def odulleri_yukle(self):
+        self.oduller = [
+            {"id": id_, "ad": ad, "mucevher_maliyeti": maliyet}
+            for id_, ad, maliyet in self.veritabani.odulleri_getir()
+        ]
+
+    def odul_ekle(self, ad: str, mucevher_maliyeti: int) -> dict:
+        ad = ad.strip()
+        if not ad:
+            raise ValueError("Ödül adı boş bırakılamaz!")
+
+        if mucevher_maliyeti <= 0:
+            raise ValueError("Mücevher maliyeti pozitif bir sayı olmalıdır!")
+
+        odul_id = self.veritabani.odul_ekle(ad, mucevher_maliyeti)
+        odul = {"id": odul_id, "ad": ad, "mucevher_maliyeti": mucevher_maliyeti}
+        self.oduller.append(odul)
+        self.oduller.sort(key=lambda o: o["mucevher_maliyeti"])
+        return odul
+
+    def odul_guncelle(self, index: int, ad: str, mucevher_maliyeti: int):
+        ad = ad.strip()
+        if not ad:
+            raise ValueError("Ödül adı boş bırakılamaz!")
+
+        if mucevher_maliyeti <= 0:
+            raise ValueError("Mücevher maliyeti pozitif bir sayı olmalıdır!")
+
+        if not (0 <= index < len(self.oduller)):
+            raise IndexError("Geçersiz ödül seçildi.")
+
+        odul = self.oduller[index]
+        self.veritabani.odul_guncelle(odul["id"], ad, mucevher_maliyeti)
+        odul["ad"] = ad
+        odul["mucevher_maliyeti"] = mucevher_maliyeti
+        self.oduller.sort(key=lambda o: o["mucevher_maliyeti"])
+
+    def odul_sil(self, index: int):
+        if not (0 <= index < len(self.oduller)):
+            raise IndexError("Geçersiz ödül seçildi.")
+
+        odul = self.oduller.pop(index)
+        self.veritabani.odul_sil(odul["id"])
+
+    def odul_satin_al(self, index: int) -> dict:
+        """Seçilen ödülü mücevher bakiyesinden düşerek satın alır.
+
+        Bakiye yetersizse ValueError fırlatır ve bakiyeye dokunmaz.
+        """
+        if not (0 <= index < len(self.oduller)):
+            raise IndexError("Geçersiz ödül seçildi.")
+
+        odul = self.oduller[index]
+        if self.mucevher_bakiyesi < odul["mucevher_maliyeti"]:
+            raise ValueError(
+                f'Yetersiz mücevher bakiyesi! "{odul["ad"]}" için '
+                f'{odul["mucevher_maliyeti"]} 💎 gerekiyor, '
+                f'bakiyenizde {self.mucevher_bakiyesi} 💎 var.'
+            )
+
+        self.mucevher_bakiyesi -= odul["mucevher_maliyeti"]
+        self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
+        return odul

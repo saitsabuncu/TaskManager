@@ -8,6 +8,12 @@ COP_KUTUSU_SAKLAMA_GUNU = 30
 VARSAYILAN_KATEGORI = "Genel"
 VARSAYILAN_KATEGORILER = ["Genel", "İş", "Kişisel", "Alışveriş", "Sağlık"]
 VARSAYILAN_MUCEVHER_BAKIYESI = 1320
+VARSAYILAN_ODULLER = [
+    ("Kısa Mola (15 dk)", 20),
+    ("Film/Dizi İzleme", 50),
+    ("Dışarıda Yemek", 150),
+    ("Küçük Bir Alışveriş", 300),
+]
 
 
 class VeriTabani:
@@ -27,6 +33,7 @@ class VeriTabani:
         self._tablolari_olustur()
         self._varsayilan_kategorileri_ekle()
         self._varsayilan_bakiyeyi_ekle()
+        self._varsayilan_odulleri_ekle()
         self._eski_silinenleri_temizle()
 
     def _baglanti_ac(self) -> sqlite3.Connection:
@@ -72,6 +79,16 @@ class VeriTabani:
                 )
                 """
             )
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS oduller (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    ad TEXT NOT NULL,
+                    mucevher_maliyeti INTEGER NOT NULL
+                )
+                """
+            )
+            
 
             # Bu sütunlar daha sonra eklendi; önceden oluşturulmuş eski
             # veritabanı dosyalarında bozulmadan çalışabilmek için
@@ -105,6 +122,15 @@ class VeriTabani:
                     "INSERT INTO bakiye (id, mucevher) VALUES (1, ?)",
                     (VARSAYILAN_MUCEVHER_BAKIYESI,),
                 )
+
+    def _varsayilan_odulleri_ekle(self):
+        with self._baglanti_ac() as baglanti:
+            (sayi,) = baglanti.execute("SELECT COUNT(*) FROM oduller").fetchone()
+            if sayi == 0:
+                baglanti.executemany(
+                    "INSERT INTO oduller (ad, mucevher_maliyeti) VALUES (?, ?)",
+                    VARSAYILAN_ODULLER,
+                )            
 
     def _eski_silinenleri_temizle(self):
         with self._baglanti_ac() as baglanti:
@@ -226,3 +252,28 @@ class VeriTabani:
                 "ON CONFLICT (id) DO UPDATE SET ad = excluded.ad",
                 (ad,),
             )
+
+    def odulleri_getir(self) -> list[tuple[int, str, int]]:
+        with self._baglanti_ac() as baglanti:
+            return baglanti.execute(
+                "SELECT id, ad, mucevher_maliyeti FROM oduller ORDER BY mucevher_maliyeti ASC"
+            ).fetchall()
+
+    def odul_ekle(self, ad: str, mucevher_maliyeti: int) -> int:
+        with self._baglanti_ac() as baglanti:
+            imlec = baglanti.execute(
+                "INSERT INTO oduller (ad, mucevher_maliyeti) VALUES (?, ?)",
+                (ad, mucevher_maliyeti),
+            )
+            return imlec.lastrowid
+
+    def odul_guncelle(self, odul_id: int, ad: str, mucevher_maliyeti: int):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE oduller SET ad = ?, mucevher_maliyeti = ? WHERE id = ?",
+                (ad, mucevher_maliyeti, odul_id),
+            )
+
+    def odul_sil(self, odul_id: int):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute("DELETE FROM oduller WHERE id = ?", (odul_id,))         
