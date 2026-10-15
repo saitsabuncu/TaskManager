@@ -35,14 +35,12 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev listesinde seçili satırın renkle belirginleştirilmesi
 * [x] Kullanıcı adının sorulup kalıcı saklanması ve açılışta hoş geldiniz mesajı
 * [x] Görev ekleme/güncelleme/silme sonrası "başka bir işlem yapmak ister misiniz?" akışı
+* [x] Mağaza (kullanıcının kendi ödüllerini ekleyip düzenleyip silebildiği) ve mücevher harcama sistemi
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
 
 ## 🚧 Planlanan Özellikler
-
-* [ ] Mücevher harcama sistemi
-* [ ] Mağaza
 * [ ] İşlem geçmişi
 * [ ] İstatistik ve grafikler
 * [ ] Modern kullanıcı arayüzü
@@ -90,6 +88,7 @@ TaskManager/
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
 │   └── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
+│   └── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
 ├── logic/                      # İş mantığı katmanı
 │   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi
 ├── data/                       # Veri erişim katmanı
