@@ -33,6 +33,8 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Kategori adlarını düzenleme (yeniden adlandırma)
 * [x] Mücevher kazanma sistemi (görev tamamlandığında mücevher kazanılır, işaret kaldırılınca geri alınır)
 * [x] Görev listesinde seçili satırın renkle belirginleştirilmesi
+* [x] Kullanıcı adının sorulup kalıcı saklanması ve açılışta hoş geldiniz mesajı
+* [x] Görev ekleme/güncelleme/silme sonrası "başka bir işlem yapmak ister misiniz?" akışı
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
