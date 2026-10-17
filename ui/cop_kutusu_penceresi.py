@@ -56,10 +56,10 @@ class CopKutusuPenceresi(QDialog):
         self.liste.clear()
         for gorev in self.gorev_yonetimi.cop_kutusunu_getir():
             item = QListWidgetItem(f'{gorev["ad"]}  (silindi: {gorev["silinme_tarihi"]})')
-            item.setData(Qt.ItemDataRole.UserRole, gorev["id"])
+            item.setData(Qt.ItemDataRole.UserRole, (gorev["id"], gorev["ad"]))
             self.liste.addItem(item)
 
-    def _secili_id_al(self):
+    def _secili_kaydi_al(self) -> tuple[int, str] | None:
         item = self.liste.currentItem()
         if item is None:
             QMessageBox.information(self, "Görev Seçilmedi", "Önce bir görev seç.")
@@ -67,18 +67,20 @@ class CopKutusuPenceresi(QDialog):
         return item.data(Qt.ItemDataRole.UserRole)
 
     def gorevi_geri_yukle(self):
-        gorev_id = self._secili_id_al()
-        if gorev_id is None:
+        secili = self._secili_kaydi_al()
+        if secili is None:
             return
+        gorev_id, ad = secili
 
-        self.gorev_yonetimi.gorev_geri_yukle(gorev_id)
+        self.gorev_yonetimi.gorev_geri_yukle(gorev_id, ad)
         self.degisiklik_oldu = True
         self._listeyi_doldur()
 
     def gorevi_kalici_sil(self):
-        gorev_id = self._secili_id_al()
-        if gorev_id is None:
+        secili = self._secili_kaydi_al()
+        if secili is None:
             return
+        gorev_id, ad = secili
 
         onay = QMessageBox.question(
             self,
@@ -91,5 +93,5 @@ class CopKutusuPenceresi(QDialog):
         if onay != QMessageBox.StandardButton.Yes:
             return
 
-        self.gorev_yonetimi.gorev_kalici_sil(gorev_id)
+        self.gorev_yonetimi.gorev_kalici_sil(gorev_id, ad)
         self._listeyi_doldur()

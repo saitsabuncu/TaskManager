@@ -14,6 +14,8 @@ VARSAYILAN_ODULLER = [
     ("Dışarıda Yemek", 150),
     ("Küçük Bir Alışveriş", 300),
 ]
+# Modül seviyesi sabitlere ekle:
+ISLEM_GECMISI_SAKLAMA_GUNU = 30
 
 
 class VeriTabani:
@@ -35,6 +37,7 @@ class VeriTabani:
         self._varsayilan_bakiyeyi_ekle()
         self._varsayilan_odulleri_ekle()
         self._eski_silinenleri_temizle()
+        self._eski_islemleri_temizle()
 
     def _baglanti_ac(self) -> sqlite3.Connection:
         baglanti = sqlite3.connect(self.db_yolu)
@@ -85,6 +88,18 @@ class VeriTabani:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ad TEXT NOT NULL,
                     mucevher_maliyeti INTEGER NOT NULL
+                )
+                """
+            )
+            
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS islem_gecmisi (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tarih TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    islem_turu TEXT NOT NULL,
+                    aciklama TEXT NOT NULL,
+                    gorev_id INTEGER
                 )
                 """
             )
@@ -276,4 +291,30 @@ class VeriTabani:
 
     def odul_sil(self, odul_id: int):
         with self._baglanti_ac() as baglanti:
-            baglanti.execute("DELETE FROM oduller WHERE id = ?", (odul_id,))         
+            baglanti.execute("DELETE FROM oduller WHERE id = ?", (odul_id,)) 
+
+    # Yeni metodlar (sınıfın sonuna):
+    def islem_kaydet(
+        self, islem_turu: str, aciklama: str, gorev_id: int | None = None
+    ) -> int:
+        with self._baglanti_ac() as baglanti:
+            imlec = baglanti.execute(
+                "INSERT INTO islem_gecmisi (islem_turu, aciklama, gorev_id) "
+                "VALUES (?, ?, ?)",
+                (islem_turu, aciklama, gorev_id),
+            )
+            return imlec.lastrowid
+
+    def islem_gecmisini_getir(self) -> list[tuple[int, str, str, str, int | None]]:
+        with self._baglanti_ac() as baglanti:
+            return baglanti.execute(
+                "SELECT id, tarih, islem_turu, aciklama, gorev_id FROM islem_gecmisi "
+                "ORDER BY tarih DESC, id DESC"
+            ).fetchall()
+
+    def _eski_islemleri_temizle(self):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "DELETE FROM islem_gecmisi WHERE tarih <= datetime('now', ?)",
+                (f"-{ISLEM_GECMISI_SAKLAMA_GUNU} days",),
+            )                

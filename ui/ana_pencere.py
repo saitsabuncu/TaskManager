@@ -17,6 +17,8 @@ from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
 
+from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
+
 TUM_KATEGORILER = "Tümü"
 
 
@@ -43,6 +45,8 @@ class AnaPencere(QWidget):
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
         self.magaza_butonu = QPushButton("Mağaza")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
+        # cop_kutusu_butonu tanımından hemen sonra:
+        self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
         self.gorev_listesi = QListWidget()
         self.gorev_listesi.setStyleSheet(
             """
@@ -67,6 +71,8 @@ class AnaPencere(QWidget):
         self.kategorileri_duzenle_butonu.clicked.connect(self.kategorileri_duzenle)
         self.magaza_butonu.clicked.connect(self.magazayi_ac)
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
+        # cop_kutusu_butonu.clicked.connect satırından hemen sonra:
+        self.islem_gecmisi_butonu.clicked.connect(self.islem_gecmisini_ac)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
 
@@ -84,6 +90,8 @@ class AnaPencere(QWidget):
         duzen.addWidget(self.kategorileri_duzenle_butonu)
         duzen.addWidget(self.magaza_butonu)
         duzen.addWidget(self.cop_kutusu_butonu)
+        # duzen.addWidget(self.cop_kutusu_butonu) satırından hemen sonra:
+        duzen.addWidget(self.islem_gecmisi_butonu)
         duzen.addLayout(filtre_duzeni)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
@@ -397,6 +405,11 @@ class AnaPencere(QWidget):
         # Çöp kutusundan geri yükleme sonrası listeyi yenile
         if pencere.degisiklik_oldu:
             self._listeyi_yenile()
+
+     # cop_kutusunu_ac metodundan sonra yeni metod:
+    def islem_gecmisini_ac(self):
+        pencere = IslemGecmisiPenceresi(self.gorev_yonetimi, self)
+        pencere.exec()       
 
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()
