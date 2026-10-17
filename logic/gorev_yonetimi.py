@@ -1,5 +1,5 @@
-from enum import Enum
 from __future__ import annotations
+from enum import Enum
 
 from data.veritabani import VeriTabani
 
