@@ -36,6 +36,8 @@ class VeriTabani:
         self._varsayilan_kategorileri_ekle()
         self._varsayilan_bakiyeyi_ekle()
         self._varsayilan_odulleri_ekle()
+        # __init__ içine, _varsayilan_odulleri_ekle() çağrısından sonra:
+        self._varsayilan_mucevher_istatistigini_ekle()
         self._eski_silinenleri_temizle()
         self._eski_islemleri_temizle()
 
@@ -88,6 +90,16 @@ class VeriTabani:
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     ad TEXT NOT NULL,
                     mucevher_maliyeti INTEGER NOT NULL
+                )
+                """
+            )
+            # _tablolari_olustur() içine, oduller tablosundan sonra:
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS mucevher_istatistik (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    toplam_kazanilan INTEGER NOT NULL DEFAULT 0,
+                    toplam_harcanan INTEGER NOT NULL DEFAULT 0
                 )
                 """
             )
@@ -293,7 +305,43 @@ class VeriTabani:
         with self._baglanti_ac() as baglanti:
             baglanti.execute("DELETE FROM oduller WHERE id = ?", (odul_id,)) 
 
-    # Yeni metodlar (sınıfın sonuna):
+    # Yeni metodlar (odul_sil metodundan sonra):
+    def _varsayilan_mucevher_istatistigini_ekle(self):
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute(
+                "SELECT id FROM mucevher_istatistik WHERE id = 1"
+            ).fetchone()
+            if satir is None:
+                baglanti.execute(
+                    "INSERT INTO mucevher_istatistik (id, toplam_kazanilan, "
+                    "toplam_harcanan) VALUES (1, 0, 0)"
+                )
+
+    def mucevher_istatistik_getir(self) -> tuple[int, int]:
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute(
+                "SELECT toplam_kazanilan, toplam_harcanan "
+                "FROM mucevher_istatistik WHERE id = 1"
+            ).fetchone()
+        return satir if satir is not None else (0, 0)
+
+    def mucevher_kazanim_guncelle(self, delta: int):
+        """Görev tamamlama/geri alma sonucu net kazanımı günceller (delta +/-)."""
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE mucevher_istatistik SET toplam_kazanilan = "
+                "toplam_kazanilan + ? WHERE id = 1",
+                (delta,),
+            )
+
+    def mucevher_harcama_ekle(self, miktar: int):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE mucevher_istatistik SET toplam_harcanan = "
+                "toplam_harcanan + ? WHERE id = 1",
+                (miktar,),
+            )        
+
     def islem_kaydet(
         self, islem_turu: str, aciklama: str, gorev_id: int | None = None
     ) -> int:

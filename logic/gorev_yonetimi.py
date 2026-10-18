@@ -160,6 +160,7 @@ class GorevYonetimi:
         if tamamlandi and not onceki_durum:
             self.mucevher_bakiyesi += GOREV_TAMAMLAMA_ODULU
             self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
+            self.veritabani.mucevher_kazanim_guncelle(GOREV_TAMAMLAMA_ODULU)
             self._islem_kaydet(
                 IslemTuru.GOREV_TAMAMLANDI,
                 f'"{gorev["ad"]}" görevi tamamlandı olarak işaretlendi '
@@ -170,6 +171,7 @@ class GorevYonetimi:
         elif not tamamlandi and onceki_durum:
             self.mucevher_bakiyesi -= GOREV_TAMAMLAMA_ODULU
             self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
+            self.veritabani.mucevher_kazanim_guncelle(-GOREV_TAMAMLAMA_ODULU)
             self._islem_kaydet(
                 IslemTuru.GOREV_TAMAMLANMADI,
                 f'"{gorev["ad"]}" görevin tamamlanma işareti kaldırıldı '
@@ -316,9 +318,31 @@ class GorevYonetimi:
 
         self.mucevher_bakiyesi -= odul["mucevher_maliyeti"]
         self.veritabani.bakiye_guncelle(self.mucevher_bakiyesi)
+        self.veritabani.mucevher_harcama_ekle(odul["mucevher_maliyeti"])
         self._islem_kaydet(
             IslemTuru.ODUL_SATIN_ALINDI,
             f'"{odul["ad"]}" ödülü satın alındı (-{odul["mucevher_maliyeti"]} 💎).',
         )
         return odul
-        return odul
+    
+    # Sınıfın sonuna yeni metod:
+    def istatistikleri_getir(self) -> dict:
+        kategori_dagilimi: dict[str, int] = {}
+        for gorev in self.gorevler:
+            kategori_dagilimi[gorev["kategori"]] = (
+                kategori_dagilimi.get(gorev["kategori"], 0) + 1
+            )
+
+        toplam = len(self.gorevler)
+        tamamlanan = sum(1 for g in self.gorevler if g["tamamlandi"])
+
+        kazanilan, harcanan = self.veritabani.mucevher_istatistik_getir()
+
+        return {
+            "kategori_dagilimi": kategori_dagilimi,
+            "tamamlanan": tamamlanan,
+            "toplam": toplam,
+            "mucevher_kazanilan": kazanilan,
+            "mucevher_harcanan": harcanan,
+            "mucevher_bakiye": self.mucevher_bakiyesi,
+        }

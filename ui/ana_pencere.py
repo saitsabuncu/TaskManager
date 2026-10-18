@@ -17,6 +17,8 @@ from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
 from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
+# import bloğuna ekle:
+from ui.istatistikler_penceresi import IstatistiklerPenceresi
 
 TUM_KATEGORILER = "Tümü"
 
@@ -45,6 +47,7 @@ class AnaPencere(QWidget):
         self.magaza_butonu = QPushButton("Mağaza")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
         self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
+        self.istatistikler_butonu = QPushButton("İstatistikler")
         self.gorev_listesi = QListWidget()
         self.gorev_listesi.setStyleSheet(
             """
@@ -70,6 +73,7 @@ class AnaPencere(QWidget):
         self.magaza_butonu.clicked.connect(self.magazayi_ac)
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
         self.islem_gecmisi_butonu.clicked.connect(self.islem_gecmisini_ac)
+        self.istatistikler_butonu.clicked.connect(self.istatistikleri_ac)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
 
@@ -84,6 +88,7 @@ class AnaPencere(QWidget):
         yonetim_buton_duzeni.addWidget(self.magaza_butonu)
         yonetim_buton_duzeni.addWidget(self.cop_kutusu_butonu)
         yonetim_buton_duzeni.addWidget(self.islem_gecmisi_butonu)
+        yonetim_buton_duzeni.addWidget(self.istatistikler_butonu)
 
         filtre_duzeni = QHBoxLayout()
         filtre_duzeni.addWidget(self.kategori_etiketi)
@@ -426,3 +431,8 @@ class AnaPencere(QWidget):
         self.bakiye_etiketi.setText(
             f"💎 Mücevher Bakiyesi: {self.gorev_yonetimi.mucevher_bakiyesi}"
         )
+
+    
+    def istatistikleri_ac(self):
+        pencere = IstatistiklerPenceresi(self.gorev_yonetimi, self)
+        pencere.exec()    

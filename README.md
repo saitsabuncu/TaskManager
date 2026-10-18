@@ -41,9 +41,10 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
+* [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 
 ## 🚧 Planlanan Özellikler
-* [ ] İstatistik ve grafikler
+
 * [ ] Modern kullanıcı arayüzü
 * [ ] Ollama entegrasyonu
 
@@ -66,7 +67,7 @@ Windows PowerShell:
 Gerekli paketleri yükleyin:
 
 ```bash
-pip install PyQt6
+pip install -r requirements.txt
 ```
 
 Uygulamayı çalıştırın:
@@ -91,12 +92,15 @@ TaskManager/
 │   ├── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
 │   ├── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
 │   └── islem_gecmisi_penceresi.py # İşlem Geçmişi penceresi (IslemGecmisiPenceresi)
+│   └── istatistikler_penceresi.py # İstatistikler penceresi (IstatistiklerPenceresi)
 ├── logic/                      # İş mantığı katmanı
 │   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
 ├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
 └── README.md                   # Proje açıklaması
+├── requirements.txt             # Python bağımlılıkları
+
 ```
 
 ## 📈 Geliştirme Süreci
