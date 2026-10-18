@@ -16,7 +16,6 @@ from logic.gorev_yonetimi import GorevYonetimi
 from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
-
 from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
 
 TUM_KATEGORILER = "Tümü"
@@ -45,7 +44,6 @@ class AnaPencere(QWidget):
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
         self.magaza_butonu = QPushButton("Mağaza")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
-        # cop_kutusu_butonu tanımından hemen sonra:
         self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
         self.gorev_listesi = QListWidget()
         self.gorev_listesi.setStyleSheet(
@@ -71,10 +69,21 @@ class AnaPencere(QWidget):
         self.kategorileri_duzenle_butonu.clicked.connect(self.kategorileri_duzenle)
         self.magaza_butonu.clicked.connect(self.magazayi_ac)
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
-        # cop_kutusu_butonu.clicked.connect satırından hemen sonra:
         self.islem_gecmisi_butonu.clicked.connect(self.islem_gecmisini_ac)
         self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
+
+        gorev_buton_duzeni = QHBoxLayout()
+        gorev_buton_duzeni.addWidget(self.gorev_butonu)
+        gorev_buton_duzeni.addWidget(self.guncelle_butonu)
+        gorev_buton_duzeni.addWidget(self.sil_butonu)
+        gorev_buton_duzeni.addWidget(self.kategori_tasi_butonu)
+
+        yonetim_buton_duzeni = QHBoxLayout()
+        yonetim_buton_duzeni.addWidget(self.kategorileri_duzenle_butonu)
+        yonetim_buton_duzeni.addWidget(self.magaza_butonu)
+        yonetim_buton_duzeni.addWidget(self.cop_kutusu_butonu)
+        yonetim_buton_duzeni.addWidget(self.islem_gecmisi_butonu)
 
         filtre_duzeni = QHBoxLayout()
         filtre_duzeni.addWidget(self.kategori_etiketi)
@@ -83,15 +92,8 @@ class AnaPencere(QWidget):
         duzen = QVBoxLayout()
         duzen.addWidget(self.hosgeldin_etiketi)
         duzen.addWidget(self.bakiye_etiketi)
-        duzen.addWidget(self.gorev_butonu)
-        duzen.addWidget(self.guncelle_butonu)
-        duzen.addWidget(self.sil_butonu)
-        duzen.addWidget(self.kategori_tasi_butonu)
-        duzen.addWidget(self.kategorileri_duzenle_butonu)
-        duzen.addWidget(self.magaza_butonu)
-        duzen.addWidget(self.cop_kutusu_butonu)
-        # duzen.addWidget(self.cop_kutusu_butonu) satırından hemen sonra:
-        duzen.addWidget(self.islem_gecmisi_butonu)
+        duzen.addLayout(gorev_buton_duzeni)
+        duzen.addLayout(yonetim_buton_duzeni)
         duzen.addLayout(filtre_duzeni)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
@@ -406,10 +408,9 @@ class AnaPencere(QWidget):
         if pencere.degisiklik_oldu:
             self._listeyi_yenile()
 
-     # cop_kutusunu_ac metodundan sonra yeni metod:
     def islem_gecmisini_ac(self):
         pencere = IslemGecmisiPenceresi(self.gorev_yonetimi, self)
-        pencere.exec()       
+        pencere.exec()
 
     def gorev_durumu_degisti(self, item: QListWidgetItem):
         font = item.font()

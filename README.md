@@ -36,12 +36,13 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Kullanıcı adının sorulup kalıcı saklanması ve açılışta hoş geldiniz mesajı
 * [x] Görev ekleme/güncelleme/silme sonrası "başka bir işlem yapmak ister misiniz?" akışı
 * [x] Mağaza (kullanıcının kendi ödüllerini ekleyip düzenleyip silebildiği) ve mücevher harcama sistemi
+* [x] İşlem geçmişi (görev, kategori ve mağaza işlemlerinin kaydı; 30 gün saklanır)
+* [x] Gruplanmış buton düzeni (görev işlemleri ve yönetim işlemleri ayrı satırlarda)
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] GitHub repository bağlantısı
 
 ## 🚧 Planlanan Özellikler
-* [ ] İşlem geçmişi
 * [ ] İstatistik ve grafikler
 * [ ] Modern kullanıcı arayüzü
 * [ ] Ollama entegrasyonu
@@ -87,10 +88,11 @@ TaskManager/
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
-│   └── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
-│   └── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
+│   ├── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
+│   ├── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
+│   └── islem_gecmisi_penceresi.py # İşlem Geçmişi penceresi (IslemGecmisiPenceresi)
 ├── logic/                      # İş mantığı katmanı
-│   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi
+│   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
 ├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
