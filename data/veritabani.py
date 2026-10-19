@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
+# Dosyanın başına:
+from datetime import date
 
 VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
 COP_KUTUSU_SAKLAMA_GUNU = 30
@@ -38,6 +40,7 @@ class VeriTabani:
         self._varsayilan_odulleri_ekle()
         # __init__ içine, _varsayilan_odulleri_ekle() çağrısından sonra:
         self._varsayilan_mucevher_istatistigini_ekle()
+        self._tekrarlanan_gorevleri_gerekirse_sifirla()
         self._eski_silinenleri_temizle()
         self._eski_islemleri_temizle()
 
@@ -103,6 +106,15 @@ class VeriTabani:
                 )
                 """
             )
+
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tekrar_durumu (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    son_sifirlama_tarihi TEXT
+                )
+                """
+            )
             
             baglanti.execute(
                 """
@@ -131,6 +143,11 @@ class VeriTabani:
                     f"ALTER TABLE gorevler ADD COLUMN kategori TEXT "
                     f"NOT NULL DEFAULT '{VARSAYILAN_KATEGORI}'"
                 )
+            if "tekrarlanan" not in sutunlar:
+                baglanti.execute(
+                    "ALTER TABLE gorevler ADD COLUMN tekrarlanan INTEGER"
+                    " NOT NULL DEFAULT 0"
+                )    
 
     def _varsayilan_kategorileri_ekle(self):
         with self._baglanti_ac() as baglanti:
@@ -170,22 +187,24 @@ class VeriTabani:
                 (f"-{COP_KUTUSU_SAKLAMA_GUNU} days",),
             )
 
-    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str]]:
+    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str, bool]]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
-                "SELECT id, ad, tamamlandi, kategori FROM gorevler "
+                "SELECT id, ad, tamamlandi, kategori, tekrarlanan FROM gorevler "
                 "WHERE silinme_tarihi IS NULL ORDER BY id ASC"
             ).fetchall()
         return [
-            (id_, ad, bool(tamamlandi), kategori)
-            for id_, ad, tamamlandi, kategori in satirlar
+            (id_, ad, bool(tamamlandi), kategori, bool(tekrarlanan))
+            for id_, ad, tamamlandi, kategori, tekrarlanan in satirlar
         ]
 
-    def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI) -> int:
+    def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI, tekrarlanan: bool = False
+                   ) -> int:
         with self._baglanti_ac() as baglanti:
             imlec = baglanti.execute(
-                "INSERT INTO gorevler (ad, tamamlandi, kategori) VALUES (?, 0, ?)",
-                (ad, kategori),
+                "INSERT INTO gorevler (ad, tamamlandi, kategori, tekrarlanan) "
+                "VALUES (?, 0, ?, ?)",
+                (ad, kategori, int(tekrarlanan)),
             )
             return imlec.lastrowid
 
@@ -306,6 +325,36 @@ class VeriTabani:
             baglanti.execute("DELETE FROM oduller WHERE id = ?", (odul_id,)) 
 
     # Yeni metodlar (odul_sil metodundan sonra):
+    def gorev_tekrarlanmasini_degistir(self, gorev_id: int, tekrarlanan: bool):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE gorevler SET tekrarlanan = ? WHERE id = ?",
+                (int(tekrarlanan), gorev_id),
+            )
+
+    def _tekrarlanan_gorevleri_gerekirse_sifirla(self):
+        """Günlük tekrarlanan görevleri, gün değiştiyse tamamlanmamış duruma
+        döndürür. Mücevher bakiyesine dokunmaz; önceki günün kazanımı kalıcıdır.
+        """
+        bugun = date.today().isoformat()
+        with self._baglanti_ac() as baglanti:
+            satir = baglanti.execute(
+                "SELECT son_sifirlama_tarihi FROM tekrar_durumu WHERE id = 1"
+            ).fetchone()
+            if satir is not None and satir[0] == bugun:
+                return
+
+            baglanti.execute(
+                "UPDATE gorevler SET tamamlandi = 0 "
+                "WHERE tekrarlanan = 1 AND silinme_tarihi IS NULL AND tamamlandi = 1"
+            )
+            baglanti.execute(
+                "INSERT INTO tekrar_durumu (id, son_sifirlama_tarihi) VALUES (1, ?) "
+                "ON CONFLICT (id) DO UPDATE SET "
+                "son_sifirlama_tarihi = excluded.son_sifirlama_tarihi",
+                (bugun,),
+            )        
+
     def _varsayilan_mucevher_istatistigini_ekle(self):
         with self._baglanti_ac() as baglanti:
             satir = baglanti.execute(

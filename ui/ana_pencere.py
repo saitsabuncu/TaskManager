@@ -43,6 +43,7 @@ class AnaPencere(QWidget):
         self.guncelle_butonu = QPushButton("Görev Güncelle")
         self.sil_butonu = QPushButton("Görev Sil")
         self.kategori_tasi_butonu = QPushButton("Kategori Taşı")
+        self.tekrar_butonu = QPushButton("Tekrarı Aç/Kapat")
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
         self.magaza_butonu = QPushButton("Mağaza")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
@@ -69,6 +70,7 @@ class AnaPencere(QWidget):
         self.guncelle_butonu.clicked.connect(self.gorev_guncelle)
         self.sil_butonu.clicked.connect(self.gorev_sil)
         self.kategori_tasi_butonu.clicked.connect(self.kategori_tasi)
+        self.tekrar_butonu.clicked.connect(self.tekrar_durumunu_degistir)
         self.kategorileri_duzenle_butonu.clicked.connect(self.kategorileri_duzenle)
         self.magaza_butonu.clicked.connect(self.magazayi_ac)
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
@@ -82,6 +84,8 @@ class AnaPencere(QWidget):
         gorev_buton_duzeni.addWidget(self.guncelle_butonu)
         gorev_buton_duzeni.addWidget(self.sil_butonu)
         gorev_buton_duzeni.addWidget(self.kategori_tasi_butonu)
+        gorev_buton_duzeni.addWidget(self.tekrar_butonu)
+        
 
         yonetim_buton_duzeni = QHBoxLayout()
         yonetim_buton_duzeni.addWidget(self.kategorileri_duzenle_butonu)
@@ -131,7 +135,8 @@ class AnaPencere(QWidget):
             return None
 
         secenekler = [
-            f'{gorev["ad"]}  [{gorev["kategori"]}]  (#{gorev["id"]})'
+            f'{"🔁 " if gorev["tekrarlanan"] else ""}{gorev["ad"]}  '
+            f'[{gorev["kategori"]}]  (#{gorev["id"]})'
             for gorev in self.gorev_yonetimi.gorevler
         ]
 
@@ -170,16 +175,17 @@ class AnaPencere(QWidget):
         self.gorev_listesi.clear()
         for gorev in self.gorev_yonetimi.gorevler:
             item = self._liste_ogesi_olustur(
-                gorev["ad"], gorev["tamamlandi"], gorev["kategori"]
+                gorev["ad"], gorev["tamamlandi"], gorev["kategori"], gorev["tekrarlanan"]
             )
             self.gorev_listesi.addItem(item)
         self.gorev_listesi.blockSignals(False)
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
     def _liste_ogesi_olustur(
-        self, ad: str, tamamlandi: bool, kategori: str
+        self, ad: str, tamamlandi: bool, kategori: str, tekrarlanan: bool = False
     ) -> QListWidgetItem:
-        item = QListWidgetItem(f"{ad}  [{kategori}]")
+        on_ek = "🔁 " if tekrarlanan else ""
+        item = QListWidgetItem(f"{on_ek}{ad}  [{kategori}]")
         item.setData(Qt.ItemDataRole.UserRole, kategori)
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(
@@ -198,6 +204,7 @@ class AnaPencere(QWidget):
             gizli = secilen_kategori != TUM_KATEGORILER and kategori != secilen_kategori
             item.setHidden(gizli)
 
+    # gorev_ekle metodunu değiştir (kategori seçiminden sonra tekrar sorusu eklendi):
     def gorev_ekle(self):
         while True:
             gorev, tamam = QInputDialog.getText(
@@ -220,14 +227,26 @@ class AnaPencere(QWidget):
             if not kategori_tamam:
                 kategori = self.gorev_yonetimi.kategoriler[0]
 
+            tekrar_yaniti = QMessageBox.question(
+                self,
+                "Günlük Tekrar",
+                "Bu görev her gün tekrar etsin mi?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No,
+            )
+            tekrarlanan = tekrar_yaniti == QMessageBox.StandardButton.Yes
+
             try:
-                eklenen = self.gorev_yonetimi.gorev_ekle(gorev, kategori)
+                eklenen = self.gorev_yonetimi.gorev_ekle(gorev, kategori, tekrarlanan)
             except ValueError as hata:
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
 
             item = self._liste_ogesi_olustur(
-                eklenen["ad"], eklenen["tamamlandi"], eklenen["kategori"]
+                eklenen["ad"],
+                eklenen["tamamlandi"],
+                eklenen["kategori"],
+                eklenen["tekrarlanan"],
             )
             self.gorev_listesi.addItem(item)
             self.filtreyi_uygula(self.kategori_filtresi.currentText())
@@ -275,7 +294,10 @@ class AnaPencere(QWidget):
                     QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                     continue
 
-                secili_item.setText(f"{guncellenen}  [{kategori}]")
+                on_ek = (
+                    "🔁 " if self.gorev_yonetimi.gorevler[index]["tekrarlanan"] else ""
+                )
+                secili_item.setText(f"{on_ek}{guncellenen}  [{kategori}]")
                 break
 
             devam = QMessageBox.question(
@@ -385,9 +407,37 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_kategorisini_degistir(index, yeni_kategori)
 
-        secili_item.setText(f'{gorev["ad"]}  [{yeni_kategori}]')
+        on_ek = "🔁 " if gorev["tekrarlanan"] else ""
+        secili_item.setText(f'{on_ek}{gorev["ad"]}  [{yeni_kategori}]')
         secili_item.setData(Qt.ItemDataRole.UserRole, yeni_kategori)
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
+
+    # Yeni metod (kategori_tasi metodundan sonra):
+    def tekrar_durumunu_degistir(self):
+        secili_item = self.gorev_listesi.currentItem()
+        if secili_item is None:
+            QMessageBox.information(
+                self,
+                "Görev Seçilmedi",
+                "Tekrar durumunu değiştirmek için önce bir görev seç."
+            )
+            return
+
+        index = self.gorev_listesi.row(secili_item)
+        gorev = self.gorev_yonetimi.gorevler[index]
+        yeni_durum = not gorev["tekrarlanan"]
+
+        self.gorev_yonetimi.gorev_tekrarlanmasini_degistir(index, yeni_durum)
+
+        on_ek = "🔁 " if yeni_durum else ""
+        secili_item.setText(f'{on_ek}{gorev["ad"]}  [{gorev["kategori"]}]')
+
+        QMessageBox.information(
+            self,
+            "Tekrar Durumu Güncellendi",
+            f'"{gorev["ad"]}" görevi artık '
+            f'{"her gün tekrar ediyor." if yeni_durum else "tekrar etmiyor."}'
+        )    
 
     def kategorileri_duzenle(self):
         pencere = KategoriDuzenlemePenceresi(self.gorev_yonetimi, self)

@@ -20,6 +20,9 @@ class IslemTuru(str, Enum):
     ODUL_GUNCELLENDI = "odul_guncellendi"
     ODUL_SILINDI = "odul_silindi"
     ODUL_SATIN_ALINDI = "odul_satin_alindi"
+    # IslemTuru enum'una ekle:
+    GOREV_TEKRARI_ACILDI = "gorev_tekrari_acildi"
+    GOREV_TEKRARI_KAPANDI = "gorev_tekrari_kapandi"
 
 
 class GorevYonetimi:
@@ -87,14 +90,23 @@ class GorevYonetimi:
 
     def yukle(self):
         self.gorevler = [
-            {"id": id_, "ad": ad, "tamamlandi": tamamlandi, "kategori": kategori}
-            for id_, ad, tamamlandi, kategori in self.veritabani.tum_gorevleri_getir()
+            {
+                "id": id_,
+                "ad": ad,
+                "tamamlandi": tamamlandi,
+                "kategori": kategori,
+                "tekrarlanan": tekrarlanan,
+            }
+            for id_, ad, tamamlandi, kategori, tekrarlanan
+            in self.veritabani.tum_gorevleri_getir()
         ]
 
     def kategorileri_yukle(self):
         self.kategoriler = self.veritabani.kategorileri_getir()
 
-    def gorev_ekle(self, ad: str, kategori: str | None = None) -> dict:
+    def gorev_ekle(
+        self, ad: str, kategori: str | None = None, tekrarlanan: bool = False
+    ) -> dict:
         ad = ad.strip()
         if not ad:
             raise ValueError("Görev adı boş bırakılamaz!")
@@ -102,12 +114,20 @@ class GorevYonetimi:
         if kategori not in self.kategoriler:
             kategori = self.kategoriler[0]
 
-        gorev_id = self.veritabani.gorev_ekle(ad, kategori)
-        gorev = {"id": gorev_id, "ad": ad, "tamamlandi": False, "kategori": kategori}
+        gorev_id = self.veritabani.gorev_ekle(ad, kategori, tekrarlanan)
+        gorev = {
+            "id": gorev_id,
+            "ad": ad,
+            "tamamlandi": False,
+            "kategori": kategori,
+            "tekrarlanan": tekrarlanan,
+        }
         self.gorevler.append(gorev)
+
+        tekrar_notu = " [Günlük tekrarlanan]" if tekrarlanan else ""
         self._islem_kaydet(
             IslemTuru.GOREV_EKLENDI,
-            f'"{ad}" görevi eklendi. [Kategori: {kategori}]',
+            f'"{ad}" görevi eklendi. [Kategori: {kategori}]{tekrar_notu}',
             gorev_id,
         )
         return gorev
@@ -196,6 +216,23 @@ class GorevYonetimi:
             f'"{yeni_kategori}" kategorisine taşındı.',
             gorev["id"],
         )
+    # Yeni metod (gorev_kategorisini_degistir metodundan sonra):
+    def gorev_tekrarlanmasini_degistir(self, index: int, tekrarlanan: bool):
+        if not (0 <= index < len(self.gorevler)):
+            raise IndexError("Geçersiz görev seçildi.")
+
+        gorev = self.gorevler[index]
+        self.veritabani.gorev_tekrarlanmasini_degistir(gorev["id"], tekrarlanan)
+        gorev["tekrarlanan"] = tekrarlanan
+
+        self._islem_kaydet(
+            IslemTuru.GOREV_TEKRARI_ACILDI
+            if tekrarlanan
+            else IslemTuru.GOREV_TEKRARI_KAPANDI,
+            f'"{gorev["ad"]}" görevi için günlük tekrar '
+            f'{"açıldı" if tekrarlanan else "kapatıldı"}.',
+            gorev["id"],
+        )    
 
     def kategori_adini_guncelle(self, eski_ad: str, yeni_ad: str):
         yeni_ad = yeni_ad.strip()

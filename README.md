@@ -40,6 +40,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Gruplanmış buton düzeni (görev işlemleri ve yönetim işlemleri ayrı satırlarda)
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
+* [x] Tekrarlanan (günlük) görevler — her gün otomatik sıfırlanma, mücevher kazanımı her tamamlamada ayrı ayrı işler
 * [x] GitHub repository bağlantısı
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 
