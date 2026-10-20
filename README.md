@@ -43,6 +43,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Tekrarlanan (günlük) görevler — her gün otomatik sıfırlanma, mücevher kazanımı her tamamlamada ayrı ayrı işler
 * [x] GitHub repository bağlantısı
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
+* [x] Tekrarlanan görevler için seri (streak) takibi — kaç gündür kesintisiz tamamlandığı listede gösterilir
 
 ## 🚧 Planlanan Özellikler
 

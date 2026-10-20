@@ -1,5 +1,6 @@
 from __future__ import annotations
 from enum import Enum
+from datetime import date, timedelta
 
 from data.veritabani import VeriTabani
 
@@ -174,6 +175,12 @@ class GorevYonetimi:
         self.veritabani.gorev_durumu_guncelle(gorev["id"], tamamlandi)
         gorev["tamamlandi"] = tamamlandi
 
+        if gorev["tekrarlanan"]:
+            if tamamlandi:
+                self.veritabani.tekrar_tamamlama_isaretle(gorev["id"])
+            else:
+                self.veritabani.tekrar_tamamlama_kaldir(gorev["id"])
+
         # Bakiye sadece durum gerçekten değiştiğinde güncellenir; aynı
         # duruma tekrar set edilmesi (örn. listeyi_yenile sırasında) mükerrer
         # mücevher kazandırmaz veya eksiltmez.
@@ -198,6 +205,24 @@ class GorevYonetimi:
                 f'(-{GOREV_TAMAMLAMA_ODULU} 💎).',
                 gorev["id"],
             )
+    def gorev_serisini_hesapla(self, gorev_id: int) -> int:
+        """Bugünden (veya bugün henüz yapılmadıysa dünden) geriye doğru
+        kesintisiz tamamlanan gün sayısını döndürür."""
+        tarihler = {
+            date.fromisoformat(t)
+            for t in self.veritabani.tekrar_tamamlama_tarihlerini_getir(gorev_id)
+        }
+
+        gun = date.today()
+        if gun not in tarihler:
+            gun -= timedelta(days=1)
+
+        seri = 0
+        while gun in tarihler:
+            seri += 1
+            gun -= timedelta(days=1)
+
+        return seri   
 
     def gorev_kategorisini_degistir(self, index: int, yeni_kategori: str):
         if not (0 <= index < len(self.gorevler)):

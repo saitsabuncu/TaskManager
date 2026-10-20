@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from pathlib import Path
-# Dosyanın başına:
+
 from datetime import date
 
 VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
@@ -112,6 +112,17 @@ class VeriTabani:
                 CREATE TABLE IF NOT EXISTS tekrar_durumu (
                     id INTEGER PRIMARY KEY CHECK (id = 1),
                     son_sifirlama_tarihi TEXT
+                )
+                """
+            )
+
+            baglanti.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tekrar_tamamlama_gunlugu (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    gorev_id INTEGER NOT NULL,
+                    tarih TEXT NOT NULL,
+                    UNIQUE (gorev_id, tarih)
                 )
                 """
             )
@@ -332,6 +343,31 @@ class VeriTabani:
                 (int(tekrarlanan), gorev_id),
             )
 
+    def tekrar_tamamlama_isaretle(self, gorev_id: int, tarih: str | None = None):
+        tarih = tarih or date.today().isoformat()
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "INSERT OR IGNORE INTO tekrar_tamamlama_gunlugu (gorev_id, tarih) "
+                "VALUES (?, ?)",
+                (gorev_id, tarih),
+            )
+
+    def tekrar_tamamlama_kaldir(self, gorev_id: int, tarih: str | None = None):
+        tarih = tarih or date.today().isoformat()
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "DELETE FROM tekrar_tamamlama_gunlugu WHERE gorev_id = ? AND tarih = ?",
+                (gorev_id, tarih),
+            )
+
+    def tekrar_tamamlama_tarihlerini_getir(self, gorev_id: int) -> list[str]:
+        with self._baglanti_ac() as baglanti:
+            satirlar = baglanti.execute(
+                "SELECT tarih FROM tekrar_tamamlama_gunlugu WHERE gorev_id = ? "
+                "ORDER BY tarih DESC",
+                (gorev_id,),
+            ).fetchall()
+        return [tarih for (tarih,) in satirlar]
     def _tekrarlanan_gorevleri_gerekirse_sifirla(self):
         """Günlük tekrarlanan görevleri, gün değiştiyse tamamlanmamış duruma
         döndürür. Mücevher bakiyesine dokunmaz; önceki günün kazanımı kalıcıdır.

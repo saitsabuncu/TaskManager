@@ -175,17 +175,40 @@ class AnaPencere(QWidget):
         self.gorev_listesi.clear()
         for gorev in self.gorev_yonetimi.gorevler:
             item = self._liste_ogesi_olustur(
-                gorev["ad"], gorev["tamamlandi"], gorev["kategori"], gorev["tekrarlanan"]
+                gorev["ad"],
+                gorev["tamamlandi"],
+                gorev["kategori"],
+                gorev["tekrarlanan"],
+                gorev["id"],
             )
             self.gorev_listesi.addItem(item)
         self.gorev_listesi.blockSignals(False)
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
+    def _gorev_metni_olustur(
+        self, ad: str, kategori: str, tekrarlanan: bool, gorev_id: int | None = None
+    ) -> str:
+        on_ek = ""
+        if tekrarlanan:
+            seri = (
+                self.gorev_yonetimi.gorev_serisini_hesapla(gorev_id)
+                if gorev_id is not None
+                else 0
+            )
+            on_ek = f"↻ ({seri} gün) " if seri > 0 else "↻ "
+        return f"{on_ek}{ad}  [{kategori}]"
+
     def _liste_ogesi_olustur(
-        self, ad: str, tamamlandi: bool, kategori: str, tekrarlanan: bool = False
+        self,
+        ad: str,
+        tamamlandi: bool,
+        kategori: str,
+        tekrarlanan: bool = False,
+        gorev_id: int | None = None,
     ) -> QListWidgetItem:
-        on_ek = "🔁 " if tekrarlanan else ""
-        item = QListWidgetItem(f"{on_ek}{ad}  [{kategori}]")
+        item = QListWidgetItem(
+            self._gorev_metni_olustur(ad, kategori, tekrarlanan, gorev_id)
+        )
         item.setData(Qt.ItemDataRole.UserRole, kategori)
         item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
         item.setCheckState(
@@ -247,6 +270,7 @@ class AnaPencere(QWidget):
                 eklenen["tamamlandi"],
                 eklenen["kategori"],
                 eklenen["tekrarlanan"],
+                eklenen["id"],
             )
             self.gorev_listesi.addItem(item)
             self.filtreyi_uygula(self.kategori_filtresi.currentText())
@@ -297,7 +321,12 @@ class AnaPencere(QWidget):
                 on_ek = (
                     "🔁 " if self.gorev_yonetimi.gorevler[index]["tekrarlanan"] else ""
                 )
-                secili_item.setText(f"{on_ek}{guncellenen}  [{kategori}]")
+                secili_item.setText(self._gorev_metni_olustur(
+                        guncellenen,
+                        kategori,
+                        self.gorev_yonetimi.gorevler[index]["tekrarlanan"],
+                        self.gorev_yonetimi.gorevler[index]["id"],
+                    ))
                 break
 
             devam = QMessageBox.question(
@@ -407,8 +436,11 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_kategorisini_degistir(index, yeni_kategori)
 
-        on_ek = "🔁 " if gorev["tekrarlanan"] else ""
-        secili_item.setText(f'{on_ek}{gorev["ad"]}  [{yeni_kategori}]')
+        secili_item.setText(
+            self._gorev_metni_olustur(
+                gorev["ad"], yeni_kategori, gorev["tekrarlanan"], gorev["id"]
+            )
+        )
         secili_item.setData(Qt.ItemDataRole.UserRole, yeni_kategori)
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
@@ -429,8 +461,11 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_tekrarlanmasini_degistir(index, yeni_durum)
 
-        on_ek = "🔁 " if yeni_durum else ""
-        secili_item.setText(f'{on_ek}{gorev["ad"]}  [{gorev["kategori"]}]')
+        secili_item.setText(
+            self._gorev_metni_olustur(
+                gorev["ad"], gorev["kategori"], yeni_durum, gorev["id"]
+            )
+        )
 
         QMessageBox.information(
             self,
@@ -476,6 +511,13 @@ class AnaPencere(QWidget):
         index = self.gorev_listesi.row(item)
         self.gorev_yonetimi.gorev_tamamlanma_degistir(index, tamamlandi_mi)
         self._bakiye_etiketini_guncelle()
+
+        gorev = self.gorev_yonetimi.gorevler[index]
+        item.setText(
+            self._gorev_metni_olustur(
+                gorev["ad"], gorev["kategori"], gorev["tekrarlanan"], gorev["id"]
+            )
+        )
 
     def _bakiye_etiketini_guncelle(self):
         self.bakiye_etiketi.setText(
