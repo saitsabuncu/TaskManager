@@ -36,12 +36,15 @@ class AnaPencere(QWidget):
         self.hosgeldin_etiketi = QLabel(
             f"👋 Hoş geldiniz, {self.gorev_yonetimi.kullanici_adi}!"
         )
+        self.hosgeldin_etiketi.setObjectName("hosgeldinEtiketi")
         self.bakiye_etiketi = QLabel(
             f"💎 Mücevher Bakiyesi: {self.gorev_yonetimi.mucevher_bakiyesi}"
         )
+        self.bakiye_etiketi.setObjectName("bakiyeEtiketi")
         self.gorev_butonu = QPushButton("Görev Ekle")
         self.guncelle_butonu = QPushButton("Görev Güncelle")
         self.sil_butonu = QPushButton("Görev Sil")
+        self.sil_butonu.setObjectName("silButonu")
         self.kategori_tasi_butonu = QPushButton("Kategori Taşı")
         self.tekrar_butonu = QPushButton("Tekrarı Aç/Kapat")
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
@@ -50,18 +53,7 @@ class AnaPencere(QWidget):
         self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
         self.istatistikler_butonu = QPushButton("İstatistikler")
         self.gorev_listesi = QListWidget()
-        self.gorev_listesi.setStyleSheet(
-            """
-            QListWidget::item:selected {
-                background-color: #3b82f6;
-                color: white;
-            }
-            QListWidget::item:selected:!active {
-                background-color: #93c5fd;
-                color: black;
-            }
-            """
-        )
+        
 
         self.kategori_etiketi = QLabel("Kategori Filtresi:")
         self.kategori_filtresi = QComboBox()
@@ -318,10 +310,9 @@ class AnaPencere(QWidget):
                     QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                     continue
 
-                on_ek = (
-                    "🔁 " if self.gorev_yonetimi.gorevler[index]["tekrarlanan"] else ""
-                )
-                secili_item.setText(self._gorev_metni_olustur(
+                
+                secili_item.setText(
+                    self._gorev_metni_olustur(
                         guncellenen,
                         kategori,
                         self.gorev_yonetimi.gorevler[index]["tekrarlanan"],

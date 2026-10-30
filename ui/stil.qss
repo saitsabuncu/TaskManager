@@ -1,0 +1,156 @@
+/*
+ * TaskManager - Merkezi QSS Teması
+ *
+ * Renk paleti (Qt Style Sheets değişken desteklemediği için referans
+ * amaçlı burada listelenmiştir; bir rengi değiştirirken ilgili tüm
+ * kullanımlarını bu dosya içinde aratıp güncelleyin):
+ *
+ *   Vurgu (accent)         #3b82f6
+ *   Vurgu - hover          #2563eb
+ *   Vurgu - pressed        #1d4ed8
+ *   Vurgu - açık (seçili)  #93c5fd
+ *   Pencere arkaplanı      #f8fafc
+ *   Yüzey (liste/giriş)    #ffffff
+ *   Kenarlık               #e2e8f0
+ *   Metin                  #1e293b
+ *   Metin - soluk          #64748b
+ *   Tehlike (silme)        #dc2626
+ */
+
+QWidget {
+    background-color: #f8fafc;
+    color: #1e293b;
+    font-family: "Segoe UI";
+    font-size: 10pt;
+}
+
+QDialog {
+    background-color: #f8fafc;
+}
+
+/* ---- Etiketler ---- */
+
+QLabel {
+    background-color: transparent;
+}
+
+#hosgeldinEtiketi {
+    font-size: 12pt;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+#bakiyeEtiketi {
+    font-size: 11pt;
+    font-weight: 600;
+    color: #2563eb;
+}
+
+/* ---- Butonlar ---- */
+
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px 14px;
+    color: #1e293b;
+}
+
+QPushButton:hover {
+    background-color: #eff6ff;
+    border-color: #93c5fd;
+    color: #2563eb;
+}
+
+QPushButton:pressed {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+}
+
+QPushButton:disabled {
+    background-color: #f1f5f9;
+    color: #94a3b8;
+    border-color: #e2e8f0;
+}
+
+#silButonu:hover {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+#silButonu:pressed {
+    background-color: #fee2e2;
+    border-color: #dc2626;
+}
+
+/* ---- Görev listesi ---- */
+
+QListWidget {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px;
+    outline: none;
+}
+
+QListWidget::item {
+    padding: 6px 4px;
+    border-radius: 4px;
+}
+
+QListWidget::item:hover {
+    background-color: #f1f5f9;
+}
+
+QListWidget::item:selected {
+    background-color: #3b82f6;
+    color: white;
+}
+
+QListWidget::item:selected:!active {
+    background-color: #93c5fd;
+    color: black;
+}
+
+
+
+/* ---- Açılır kutu (kategori filtresi) ---- */
+
+QComboBox {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+QComboBox:hover {
+    border-color: #93c5fd;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 24px;
+}
+
+QComboBox QAbstractItemView {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    selection-background-color: #3b82f6;
+    selection-color: white;
+    outline: none;
+}
+
+/* ---- Giriş alanları (QInputDialog içindeki QLineEdit vb.) ---- */
+
+QLineEdit {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 8px;
+    selection-background-color: #3b82f6;
+}
+
+QLineEdit:focus {
+    border-color: #3b82f6;
+}

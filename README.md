@@ -44,10 +44,10 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] GitHub repository bağlantısı
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 * [x] Tekrarlanan görevler için seri (streak) takibi — kaç gündür kesintisiz tamamlandığı listede gösterilir
+* [x] Modern arayüz teması (merkezi QSS: vurgu rengi, yuvarlak köşeli butonlar, hover/pressed efektleri)
 
 ## 🚧 Planlanan Özellikler
 
-* [ ] Modern kullanıcı arayüzü
 * [ ] Ollama entegrasyonu
 
 ## 💻 Kurulum
