@@ -4,7 +4,7 @@ import re
 
 import ollama
 
-OLLAMA_MODELI = "llama3.2:3b"
+OLLAMA_MODELI = "taskmanager-kategori"
 
 # Kategori ADI yerine POZİSYONUNA (0=Genel, 1=İş, 2=Kişisel, 3=Alışveriş,
 # 4=Sağlık) göre eşleştirilir. Uygulama şu an kategori eklemeyi değil
@@ -57,6 +57,9 @@ def _anahtar_kelimeyle_tahmin_et(gorev_adi: str, kategoriler: list[str]) -> str 
 
 
 def _ollamadan_kategori_oner(gorev_adi: str, kategoriler: list[str]) -> str | None:
+    # Sistem talimatı artık Ollama Modelfile'ında ("taskmanager-kategori"
+    # modeli) tanımlı; burada tekrar gönderilmez (bkz. proje köküdeki
+    # Modelfile).
     numarali_liste = "\n".join(
         f"{i}) {kategori}" for i, kategori in enumerate(kategoriler, start=1)
     )
@@ -64,16 +67,7 @@ def _ollamadan_kategori_oner(gorev_adi: str, kategoriler: list[str]) -> str | No
     def soru_metni(ad: str) -> str:
         return f"Kategoriler:\n{numarali_liste}\n\nGörev: \"{ad}\"\nNumara:"
 
-    messages = [
-        {
-            "role": "system",
-            "content": (
-                "Bir görevin hangi kategoriye ait olduğunu belirliyorsun. "
-                "SADECE kategorinin numarasını yaz (örnek: 3). Başka "
-                "hiçbir kelime, açıklama veya noktalama ekleme."
-            ),
-        },
-    ]
+    messages: list[dict[str, str]] = []
 
     for ornek_gorev, indeks in ORNEK_GOREV_INDEKSLERI.items():
         if indeks >= len(kategoriler):

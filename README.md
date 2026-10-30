@@ -77,15 +77,27 @@ pip install -r requirements.txt
 ```
 
 Kategori önerisi özelliği için [Ollama](https://ollama.com) kurulu ve
-çalışıyor olmalı, ayrıca `llama3.2:3b` modeli indirilmiş olmalı:
+çalışıyor olmalı. Önce temel model indirilmeli:
 
 ```bash
 ollama pull llama3.2:3b
 ```
 
-Ollama kurulu değilse veya çalışmıyorsa, uygulama bundan etkilenmez —
-sadece anahtar kelime eşleşmesi olmayan görevlerde kategori önerisi
-gösterilmez.
+Ardından proje köküne eklenmiş `Modelfile` ile, kategori önerisine özel
+`taskmanager-kategori` modeli oluşturulmalı (sistem talimatı ve
+`temperature` ayarı bu dosyada tanımlıdır, kodda tekrar edilmez):
+
+```bash
+ollama create taskmanager-kategori -f Modelfile
+```
+
+`Modelfile` içeriğini değiştirirseniz (örn. sistem talimatını
+güncellerseniz), yukarıdaki `ollama create` komutunu tekrar çalıştırmanız
+gerekir — aksi halde değişiklik modele yansımaz.
+
+Ollama kurulu değilse, `taskmanager-kategori` modeli oluşturulmamışsa
+veya Ollama çalışmıyorsa, uygulama bundan etkilenmez — sadece anahtar
+kelime eşleşmesi olmayan görevlerde kategori önerisi gösterilmez.
 
 Uygulamayı çalıştırın:
 
@@ -103,6 +115,7 @@ TaskManager/
 ├── .venv/                      # Sanal Python ortamı
 ├── .gitignore                  # Git tarafından yok sayılan dosyalar
 ├── main.py                     # Uygulamanın başlangıç dosyası
+├── Modelfile                   # Ollama "taskmanager-kategori" modeli tanımı
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
@@ -111,7 +124,8 @@ TaskManager/
 │   └── islem_gecmisi_penceresi.py # İşlem Geçmişi penceresi (IslemGecmisiPenceresi)
 │   └── istatistikler_penceresi.py # İstatistikler penceresi (IstatistiklerPenceresi)
 ├── logic/                      # İş mantığı katmanı
-│   └── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
+│   ├── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
+│   └── kategori_onerici.py     # Kategori önerisi (anahtar kelime + Ollama)
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
 ├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
