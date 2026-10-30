@@ -2,7 +2,10 @@
 
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
-> **Durum:** Geliştirme aşamasında 🚧
+> **Durum:** Ekim 2026 itibarıyla aktif geliştirme durduruldu. Planlanan
+> tüm özellikler (işlem geçmişi, istatistikler, modern arayüz, Ollama
+> destekli kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan
+> devam edilecek.
 
 ## 🎯 Projenin Amacı
 
