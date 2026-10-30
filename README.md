@@ -45,10 +45,11 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 * [x] Tekrarlanan görevler için seri (streak) takibi — kaç gündür kesintisiz tamamlandığı listede gösterilir
 * [x] Modern arayüz teması (merkezi QSS: vurgu rengi, yuvarlak köşeli butonlar, hover/pressed efektleri)
+* [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
 
 ## 🚧 Planlanan Özellikler
 
-* [ ] Ollama entegrasyonu
+
 
 ## 💻 Kurulum
 
@@ -71,6 +72,17 @@ Gerekli paketleri yükleyin:
 ```bash
 pip install -r requirements.txt
 ```
+
+Kategori önerisi özelliği için [Ollama](https://ollama.com) kurulu ve
+çalışıyor olmalı, ayrıca `llama3.2:3b` modeli indirilmiş olmalı:
+
+```bash
+ollama pull llama3.2:3b
+```
+
+Ollama kurulu değilse veya çalışmıyorsa, uygulama bundan etkilenmez —
+sadece anahtar kelime eşleşmesi olmayan görevlerde kategori önerisi
+gösterilmez.
 
 Uygulamayı çalıştırın:
 

@@ -17,8 +17,9 @@ from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
 from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
-# import bloğuna ekle:
 from ui.istatistikler_penceresi import IstatistiklerPenceresi
+# import bloğuna ekle:
+from logic.kategori_onerici import kategori_tahmin_et
 
 TUM_KATEGORILER = "Tümü"
 
@@ -231,12 +232,24 @@ class AnaPencere(QWidget):
             if not tamam:
                 return
 
+            onerilen_kategori = kategori_tahmin_et(gorev, self.gorev_yonetimi.kategoriler)
+            baslangic_index = (
+                self.gorev_yonetimi.kategoriler.index(onerilen_kategori)
+                if onerilen_kategori
+                else 0
+            )
+            etiket = (
+                f"🤖 AI önerisi: {onerilen_kategori}\n\nGörevin kategorisi:"
+                if onerilen_kategori
+                else "Görevin kategorisi:"
+            )
+
             kategori, kategori_tamam = QInputDialog.getItem(
                 self,
                 "Kategori Seç",
-                "Görevin kategorisi:",
+                etiket,
                 self.gorev_yonetimi.kategoriler,
-                0,
+                baslangic_index,
                 False,
             )
             if not kategori_tamam:
