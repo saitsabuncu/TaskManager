@@ -80,7 +80,7 @@ Kategori önerisi özelliği için [Ollama](https://ollama.com) kurulu ve
 çalışıyor olmalı. Önce temel model indirilmeli:
 
 ```bash
-ollama pull llama3.2:3b
+ollama pull qwen2.5:7b-instruct
 ```
 
 Ardından proje köküne eklenmiş `Modelfile` ile, kategori önerisine özel
@@ -91,9 +91,9 @@ Ardından proje köküne eklenmiş `Modelfile` ile, kategori önerisine özel
 ollama create taskmanager-kategori -f Modelfile
 ```
 
-`Modelfile` içeriğini değiştirirseniz (örn. sistem talimatını
-güncellerseniz), yukarıdaki `ollama create` komutunu tekrar çalıştırmanız
-gerekir — aksi halde değişiklik modele yansımaz.
+`Modelfile` içeriğini değiştirirseniz (örn. temel modeli veya sistem
+talimatını güncellerseniz), yukarıdaki `ollama create` komutunu tekrar
+çalıştırmanız gerekir — aksi halde değişiklik modele yansımaz.
 
 Ollama kurulu değilse, `taskmanager-kategori` modeli oluşturulmamışsa
 veya Ollama çalışmıyorsa, uygulama bundan etkilenmez — sadece anahtar
