@@ -70,13 +70,11 @@ QPushButton {
 }
 
 QPushButton:hover {
-    background-color: #eef2ff;
     border-color: #c7d2fe;
     color: #4338ca;
 }
 
 QPushButton:pressed {
-    background-color: #e0e7ff;
     border-color: #4f46e5;
 }
 
@@ -95,11 +93,6 @@ QPushButton[role="toolbar"] {
     font-weight: 500;
 }
 
-QPushButton[role="toolbar"]:hover {
-    background-color: #eef2ff;
-    color: #4338ca;
-}
-
 QPushButton[role="toolbar"]:pressed {
     background-color: #e0e7ff;
 }
@@ -113,18 +106,13 @@ QPushButton[role="primary"] {
     padding: 9px 18px;
 }
 
-QPushButton[role="primary"]:hover {
-    background-color: #4338ca;
-}
+
 
 QPushButton[role="primary"]:pressed {
     background-color: #3730a3;
 }
 
-#silButonu:hover {
-    background-color: #fef2f2;
-    color: #dc2626;
-}
+
 
 #silButonu:pressed {
     background-color: #fee2e2;

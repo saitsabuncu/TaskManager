@@ -23,6 +23,7 @@ from ui.istatistikler_penceresi import IstatistiklerPenceresi
 from logic.kategori_onerici import kategori_tahmin_et
 from logic.kategori_onerici import kategori_tahmin_et
 from ui.gorev_satiri_widget import GorevSatiriWidget
+from ui.animasyonlu_buton import AnimasyonluButon
 
 TUM_KATEGORILER = "Tümü"
 
@@ -47,24 +48,24 @@ class AnaPencere(QWidget):
         self.bakiye_etiketi.setObjectName("bakiyeEtiketi")
         self.gorev_butonu = QPushButton("Görev Ekle")
         self.gorev_butonu.setProperty("role", "primary")
-        self.guncelle_butonu = QPushButton("Görev Güncelle")
+        self.guncelle_butonu = AnimasyonluButon("Görev Güncelle", canli_renk="#4338ca")
         self.guncelle_butonu.setProperty("role", "toolbar")
-        self.sil_butonu = QPushButton("Görev Sil")
+        self.sil_butonu = AnimasyonluButon("Görev Sil", canli_renk="#dc2626")
         self.sil_butonu.setObjectName("silButonu")
         self.sil_butonu.setProperty("role", "toolbar")
-        self.kategori_tasi_butonu = QPushButton("Kategori Taşı")
+        self.kategori_tasi_butonu = AnimasyonluButon("Kategori Taşı", canli_renk="#4338ca")
         self.kategori_tasi_butonu.setProperty("role", "toolbar")
-        self.tekrar_butonu = QPushButton("Tekrarı Aç/Kapat")
+        self.tekrar_butonu = AnimasyonluButon("Tekrarı Aç/Kapat", canli_renk="#4338ca")
         self.tekrar_butonu.setProperty("role", "toolbar")
-        self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
+        self.kategorileri_duzenle_butonu = AnimasyonluButon("Kategorileri Düzenle", canli_renk="#4338ca")
         self.kategorileri_duzenle_butonu.setProperty("role", "toolbar")
-        self.magaza_butonu = QPushButton("Mağaza")
+        self.magaza_butonu = AnimasyonluButon("Mağaza", canli_renk="#4338ca")
         self.magaza_butonu.setProperty("role", "toolbar")
-        self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
+        self.cop_kutusu_butonu = AnimasyonluButon("Çöp Kutusu", canli_renk="#4338ca")
         self.cop_kutusu_butonu.setProperty("role", "toolbar")
-        self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
+        self.islem_gecmisi_butonu = AnimasyonluButon("İşlem Geçmişi", canli_renk="#4338ca")
         self.islem_gecmisi_butonu.setProperty("role", "toolbar")
-        self.istatistikler_butonu = QPushButton("İstatistikler")
+        self.istatistikler_butonu = AnimasyonluButon("İstatistikler", canli_renk="#4338ca")
         self.istatistikler_butonu.setProperty("role", "toolbar")
         self.gorev_listesi = QListWidget()
 
