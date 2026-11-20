@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QComboBox,
+    QFrame,
 )
 from PyQt6.QtCore import Qt
 
@@ -18,8 +19,10 @@ from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
 from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
 from ui.istatistikler_penceresi import IstatistiklerPenceresi
-# import bloğuna ekle:
+
 from logic.kategori_onerici import kategori_tahmin_et
+from logic.kategori_onerici import kategori_tahmin_et
+from ui.gorev_satiri_widget import GorevSatiriWidget
 
 TUM_KATEGORILER = "Tümü"
 
@@ -43,18 +46,27 @@ class AnaPencere(QWidget):
         )
         self.bakiye_etiketi.setObjectName("bakiyeEtiketi")
         self.gorev_butonu = QPushButton("Görev Ekle")
+        self.gorev_butonu.setProperty("role", "primary")
         self.guncelle_butonu = QPushButton("Görev Güncelle")
+        self.guncelle_butonu.setProperty("role", "toolbar")
         self.sil_butonu = QPushButton("Görev Sil")
         self.sil_butonu.setObjectName("silButonu")
+        self.sil_butonu.setProperty("role", "toolbar")
         self.kategori_tasi_butonu = QPushButton("Kategori Taşı")
+        self.kategori_tasi_butonu.setProperty("role", "toolbar")
         self.tekrar_butonu = QPushButton("Tekrarı Aç/Kapat")
+        self.tekrar_butonu.setProperty("role", "toolbar")
         self.kategorileri_duzenle_butonu = QPushButton("Kategorileri Düzenle")
+        self.kategorileri_duzenle_butonu.setProperty("role", "toolbar")
         self.magaza_butonu = QPushButton("Mağaza")
+        self.magaza_butonu.setProperty("role", "toolbar")
         self.cop_kutusu_butonu = QPushButton("Çöp Kutusu")
+        self.cop_kutusu_butonu.setProperty("role", "toolbar")
         self.islem_gecmisi_butonu = QPushButton("İşlem Geçmişi")
+        self.islem_gecmisi_butonu.setProperty("role", "toolbar")
         self.istatistikler_butonu = QPushButton("İstatistikler")
+        self.istatistikler_butonu.setProperty("role", "toolbar")
         self.gorev_listesi = QListWidget()
-        
 
         self.kategori_etiketi = QLabel("Kategori Filtresi:")
         self.kategori_filtresi = QComboBox()
@@ -69,23 +81,34 @@ class AnaPencere(QWidget):
         self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
         self.islem_gecmisi_butonu.clicked.connect(self.islem_gecmisini_ac)
         self.istatistikler_butonu.clicked.connect(self.istatistikleri_ac)
-        self.gorev_listesi.itemChanged.connect(self.gorev_durumu_degisti)
+        
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
 
-        gorev_buton_duzeni = QHBoxLayout()
-        gorev_buton_duzeni.addWidget(self.gorev_butonu)
-        gorev_buton_duzeni.addWidget(self.guncelle_butonu)
-        gorev_buton_duzeni.addWidget(self.sil_butonu)
-        gorev_buton_duzeni.addWidget(self.kategori_tasi_butonu)
-        gorev_buton_duzeni.addWidget(self.tekrar_butonu)
-        
+        gorev_kutusu = self._arac_kutusu_olustur(
+            "GÖREV İŞLEMLERİ",
+            [
+                self.gorev_butonu,
+                self.guncelle_butonu,
+                self.sil_butonu,
+                self.kategori_tasi_butonu,
+                self.tekrar_butonu,
+            ],
+        )
 
-        yonetim_buton_duzeni = QHBoxLayout()
-        yonetim_buton_duzeni.addWidget(self.kategorileri_duzenle_butonu)
-        yonetim_buton_duzeni.addWidget(self.magaza_butonu)
-        yonetim_buton_duzeni.addWidget(self.cop_kutusu_butonu)
-        yonetim_buton_duzeni.addWidget(self.islem_gecmisi_butonu)
-        yonetim_buton_duzeni.addWidget(self.istatistikler_butonu)
+        yonetim_kutusu = self._arac_kutusu_olustur(
+            "YÖNETİM",
+            [
+                self.kategorileri_duzenle_butonu,
+                self.magaza_butonu,
+                self.cop_kutusu_butonu,
+                self.islem_gecmisi_butonu,
+                self.istatistikler_butonu,
+            ],
+        )
+
+        arac_cubugu_duzeni = QHBoxLayout()
+        arac_cubugu_duzeni.addWidget(gorev_kutusu)
+        arac_cubugu_duzeni.addWidget(yonetim_kutusu)
 
         filtre_duzeni = QHBoxLayout()
         filtre_duzeni.addWidget(self.kategori_etiketi)
@@ -94,14 +117,38 @@ class AnaPencere(QWidget):
         duzen = QVBoxLayout()
         duzen.addWidget(self.hosgeldin_etiketi)
         duzen.addWidget(self.bakiye_etiketi)
-        duzen.addLayout(gorev_buton_duzeni)
-        duzen.addLayout(yonetim_buton_duzeni)
+        duzen.addLayout(arac_cubugu_duzeni)
         duzen.addLayout(filtre_duzeni)
         duzen.addWidget(self.gorev_listesi)
         self.setLayout(duzen)
 
         self._kategori_filtresini_doldur()
         self._listeyi_yenile()
+
+    def _arac_kutusu_olustur(
+        self, baslik: str, butonlar: list[QPushButton]
+    ) -> QFrame:
+        # Bir buton grubunu başlıklı, kart görünümlü bir kutuya sarar
+        # (bkz. #aracKutusu / [role="toolbar"] stil.qss kuralları).
+        kutu = QFrame()
+        kutu.setObjectName("aracKutusu")
+
+        baslik_etiketi = QLabel(baslik)
+        baslik_etiketi.setObjectName("grupBasligi")
+
+        buton_duzeni = QHBoxLayout()
+        buton_duzeni.setContentsMargins(6, 2, 6, 6)
+        for buton in butonlar:
+            buton_duzeni.addWidget(buton)
+
+        kutu_duzeni = QVBoxLayout()
+        kutu_duzeni.setContentsMargins(4, 8, 4, 4)
+        kutu_duzeni.setSpacing(2)
+        kutu_duzeni.addWidget(baslik_etiketi)
+        kutu_duzeni.addLayout(buton_duzeni)
+        kutu.setLayout(kutu_duzeni)
+
+        return kutu    
 
     def _kullanici_adini_gerekirse_sor(self):
         # İlk açılışta kullanıcı adı henüz kaydedilmemişse sorulur; bir kere
@@ -161,57 +208,62 @@ class AnaPencere(QWidget):
     def _listeyi_yenile(self):
         # Listeyi gorev_yonetimi.gorevler ile tamamen yeniden doldurur
         # (ilk açılışta, kategori işlemleri ve çöp kutusundan geri yükleme
-        # sonrası kullanılır). itemChanged sinyalinin bu sırada tetiklenip
-        # gereksiz veritabanı yazısı yapmaması için sinyalleri geçici
-        # kapatıyoruz.
-        self.gorev_listesi.blockSignals(True)
+        # sonrası kullanılır).
         self.gorev_listesi.clear()
-        for gorev in self.gorev_yonetimi.gorevler:
-            item = self._liste_ogesi_olustur(
-                gorev["ad"],
-                gorev["tamamlandi"],
-                gorev["kategori"],
-                gorev["tekrarlanan"],
-                gorev["id"],
-            )
-            self.gorev_listesi.addItem(item)
-        self.gorev_listesi.blockSignals(False)
+        for _ in self.gorev_yonetimi.gorevler:
+            self._satir_ekle()
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
-    def _gorev_metni_olustur(
-        self, ad: str, kategori: str, tekrarlanan: bool, gorev_id: int | None = None
-    ) -> str:
-        on_ek = ""
-        if tekrarlanan:
-            seri = (
-                self.gorev_yonetimi.gorev_serisini_hesapla(gorev_id)
-                if gorev_id is not None
-                else 0
-            )
-            on_ek = f"↻ ({seri} gün) " if seri > 0 else "↻ "
-        return f"{on_ek}{ad}  [{kategori}]"
+    def _satir_ekle(self) -> QListWidgetItem:
+        # Yeni, boş bir satır oluşturup listeye ekler; görünür içeriği
+        # hemen ardından _satiri_guncelle ile doldurur (tek kaynak,
+        # tekrar yok).
+        item = QListWidgetItem()
+        self.gorev_listesi.addItem(item)
 
-    def _liste_ogesi_olustur(
-        self,
-        ad: str,
-        tamamlandi: bool,
-        kategori: str,
-        tekrarlanan: bool = False,
-        gorev_id: int | None = None,
-    ) -> QListWidgetItem:
-        item = QListWidgetItem(
-            self._gorev_metni_olustur(ad, kategori, tekrarlanan, gorev_id)
+        widget = GorevSatiriWidget()
+        widget.tamamlanma_degisti.connect(
+            lambda tamamlandi_mi, oge=item: self._satir_tamamlandi_degisti(
+                oge, tamamlandi_mi
+            )
         )
-        item.setData(Qt.ItemDataRole.UserRole, kategori)
-        item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
-        item.setCheckState(
-            Qt.CheckState.Checked if tamamlandi else Qt.CheckState.Unchecked
-        )
-        if tamamlandi:
-            font = item.font()
-            font.setStrikeOut(True)
-            item.setFont(font)
+        self.gorev_listesi.setItemWidget(item, widget)
+
+        self._satiri_guncelle(item)
         return item
+
+    def _satiri_guncelle(self, item: QListWidgetItem) -> None:
+        # Bir satırın görünümünü gorev_yonetimi.gorevler'deki güncel
+        # veriyle yeniden çizer. Görev güncelleme, kategori taşıma,
+        # tekrar durumu değişikliği ve tamamlanma değişikliğinin hepsi
+        # bu tek metoda yönlenir.
+        index = self.gorev_listesi.row(item)
+        gorev = self.gorev_yonetimi.gorevler[index]
+        widget: GorevSatiriWidget = self.gorev_listesi.itemWidget(item)
+
+        kategori_indeksi = (
+            self.gorev_yonetimi.kategoriler.index(gorev["kategori"])
+            if gorev["kategori"] in self.gorev_yonetimi.kategoriler
+            else -1
+        )
+        seri = (
+            self.gorev_yonetimi.gorev_serisini_hesapla(gorev["id"])
+            if gorev["tekrarlanan"]
+            else 0
+        )
+
+        widget.gorevi_goster(
+            gorev["ad"],
+            gorev["kategori"],
+            kategori_indeksi,
+            gorev["tamamlandi"],
+            gorev["tekrarlanan"],
+            seri,
+        )
+        item.setData(Qt.ItemDataRole.UserRole, gorev["kategori"])
+        item.setSizeHint(widget.sizeHint())
+
+    
 
     def filtreyi_uygula(self, secilen_kategori: str):
         for i in range(self.gorev_listesi.count()):
@@ -270,14 +322,7 @@ class AnaPencere(QWidget):
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
 
-            item = self._liste_ogesi_olustur(
-                eklenen["ad"],
-                eklenen["tamamlandi"],
-                eklenen["kategori"],
-                eklenen["tekrarlanan"],
-                eklenen["id"],
-            )
-            self.gorev_listesi.addItem(item)
+            self._satir_ekle()
             self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
             devam = QMessageBox.question(
@@ -324,13 +369,7 @@ class AnaPencere(QWidget):
                     continue
 
                 
-                secili_item.setText(
-                    self._gorev_metni_olustur(
-                        guncellenen,
-                        kategori,
-                        self.gorev_yonetimi.gorevler[index]["tekrarlanan"],
-                        self.gorev_yonetimi.gorevler[index]["id"],
-                    ))
+                self._satiri_guncelle(secili_item)
                 break
 
             devam = QMessageBox.question(
@@ -440,12 +479,7 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_kategorisini_degistir(index, yeni_kategori)
 
-        secili_item.setText(
-            self._gorev_metni_olustur(
-                gorev["ad"], yeni_kategori, gorev["tekrarlanan"], gorev["id"]
-            )
-        )
-        secili_item.setData(Qt.ItemDataRole.UserRole, yeni_kategori)
+        self._satiri_guncelle(secili_item)
         self.filtreyi_uygula(self.kategori_filtresi.currentText())
 
     # Yeni metod (kategori_tasi metodundan sonra):
@@ -465,11 +499,7 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_tekrarlanmasini_degistir(index, yeni_durum)
 
-        secili_item.setText(
-            self._gorev_metni_olustur(
-                gorev["ad"], gorev["kategori"], yeni_durum, gorev["id"]
-            )
-        )
+        self._satiri_guncelle(secili_item)
 
         QMessageBox.information(
             self,
@@ -506,22 +536,11 @@ class AnaPencere(QWidget):
         pencere = IslemGecmisiPenceresi(self.gorev_yonetimi, self)
         pencere.exec()
 
-    def gorev_durumu_degisti(self, item: QListWidgetItem):
-        font = item.font()
-        tamamlandi_mi = item.checkState() == Qt.CheckState.Checked
-        font.setStrikeOut(tamamlandi_mi)
-        item.setFont(font)
-
+    def _satir_tamamlandi_degisti(self, item: QListWidgetItem, tamamlandi_mi: bool) -> None:
         index = self.gorev_listesi.row(item)
         self.gorev_yonetimi.gorev_tamamlanma_degistir(index, tamamlandi_mi)
         self._bakiye_etiketini_guncelle()
-
-        gorev = self.gorev_yonetimi.gorevler[index]
-        item.setText(
-            self._gorev_metni_olustur(
-                gorev["ad"], gorev["kategori"], gorev["tekrarlanan"], gorev["id"]
-            )
-        )
+        self._satiri_guncelle(item)
 
     def _bakiye_etiketini_guncelle(self):
         self.bakiye_etiketi.setText(
