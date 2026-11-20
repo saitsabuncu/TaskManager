@@ -2,10 +2,10 @@
 
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
-> **Durum:** Ekim 2026 itibarıyla aktif geliştirme durduruldu. Planlanan
-> tüm özellikler (işlem geçmişi, istatistikler, modern arayüz, Ollama
-> destekli kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan
-> devam edilecek.
+> **Durum:** Kasım 2026'da arayüz modernize edildi (gruplu kart düzeni,
+> renkli kategori rozetleri, hover animasyonlu butonlar). Planlanan diğer
+> tüm özellikler (işlem geçmişi, istatistikler, Ollama destekli kategori
+> önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam edilecek.
 
 ## 🎯 Projenin Amacı
 
@@ -47,7 +47,9 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] GitHub repository bağlantısı
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 * [x] Tekrarlanan görevler için seri (streak) takibi — kaç gündür kesintisiz tamamlandığı listede gösterilir
-* [x] Modern arayüz teması (merkezi QSS: vurgu rengi, yuvarlak köşeli butonlar, hover/pressed efektleri)
+* [x] Modern arayüz teması (merkezi QSS: indigo vurgu rengi, kart görünümlü gruplu araç çubuğu, yuvarlak köşeli butonlar)
+* [x] Görev satırlarında renkli kategori rozetleri (kategori pozisyonuna göre renklendirilmiş pill etiketler)
+* [x] Butonlarda hover animasyonu (metin rengi fare üzerine gelince yumuşakça canlanır, uzaklaşınca soluklaşır)
 * [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
 
 ## 🚧 Planlanan Özellikler
@@ -118,19 +120,22 @@ TaskManager/
 ├── Modelfile                   # Ollama "taskmanager-kategori" modeli tanımı
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
+│   ├── animasyonlu_buton.py    # Hover'da metin rengi animasyonlu buton (AnimasyonluButon)
+│   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + kategori rozeti (GorevSatiriWidget)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
 │   ├── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
 │   ├── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
-│   └── islem_gecmisi_penceresi.py # İşlem Geçmişi penceresi (IslemGecmisiPenceresi)
-│   └── istatistikler_penceresi.py # İstatistikler penceresi (IstatistiklerPenceresi)
+│   ├── islem_gecmisi_penceresi.py # İşlem Geçmişi penceresi (IslemGecmisiPenceresi)
+│   ├── istatistikler_penceresi.py # İstatistikler penceresi (IstatistiklerPenceresi)
+│   └── stil.qss                # Merkezi QSS teması
 ├── logic/                      # İş mantığı katmanı
 │   ├── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
 │   └── kategori_onerici.py     # Kategori önerisi (anahtar kelime + Ollama)
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
 ├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
-└── README.md                   # Proje açıklaması
-├── requirements.txt             # Python bağımlılıkları
+├── README.md                   # Proje açıklaması
+└── requirements.txt            # Python bağımlılıkları
 
 ```
 
