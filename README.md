@@ -2,10 +2,11 @@
 
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
-> **Durum:** Kasım 2026'da arayüz modernize edildi (gruplu kart düzeni,
-> renkli kategori rozetleri, hover animasyonlu butonlar). Planlanan diğer
-> tüm özellikler (işlem geçmişi, istatistikler, Ollama destekli kategori
-> önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam edilecek.
+> **Durum:** Kasım 2026'da arayüz modernize edildi (açılır menü butonları,
+> renkli kategori rozetleri, hover animasyonlu birincil buton). Planlanan
+> diğer tüm özellikler (işlem geçmişi, istatistikler, Ollama destekli
+> kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam
+> edilecek.
 
 ## 🎯 Projenin Amacı
 
@@ -40,21 +41,35 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev ekleme/güncelleme/silme sonrası "başka bir işlem yapmak ister misiniz?" akışı
 * [x] Mağaza (kullanıcının kendi ödüllerini ekleyip düzenleyip silebildiği) ve mücevher harcama sistemi
 * [x] İşlem geçmişi (görev, kategori ve mağaza işlemlerinin kaydı; 30 gün saklanır)
-* [x] Gruplanmış buton düzeni (görev işlemleri ve yönetim işlemleri ayrı satırlarda)
 * [x] Proje mimarisinin ui / logic / data katmanlarına ayrılması
 * [x] Git ile sürüm kontrolü
 * [x] Tekrarlanan (günlük) görevler — her gün otomatik sıfırlanma, mücevher kazanımı her tamamlamada ayrı ayrı işler
 * [x] GitHub repository bağlantısı
 * [x] İstatistik ve grafikler (tamamlanma oranı, kategori dağılımı, mücevher kazanım/harcama özeti)
 * [x] Tekrarlanan görevler için seri (streak) takibi — kaç gündür kesintisiz tamamlandığı listede gösterilir
-* [x] Modern arayüz teması (merkezi QSS: indigo vurgu rengi, kart görünümlü gruplu araç çubuğu, yuvarlak köşeli butonlar)
+* [x] Modern arayüz teması (merkezi QSS: indigo vurgu rengi, yuvarlak köşeli butonlar)
+* [x] Araç çubuğu açılır menü butonlarında toplandı (Görev İşlemleri / Yönetim) — yeni özellik eklendikçe araç çubuğu büyümez
 * [x] Görev satırlarında renkli kategori rozetleri (kategori pozisyonuna göre renklendirilmiş pill etiketler)
-* [x] Butonlarda hover animasyonu (metin rengi fare üzerine gelince yumuşakça canlanır, uzaklaşınca soluklaşır)
+* [x] Birincil butonda hover animasyonu (metin rengi fare üzerine gelince yumuşakça canlanır, uzaklaşınca soluklaşır)
 * [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
 
 ## 🚧 Planlanan Özellikler
 
+**Teknik borç**
+* [ ] Otomatik testler (`pytest`) — önce `logic/gorev_yonetimi.py` ve `logic/kategori_onerici.py` için
+* [ ] Çoklu kullanıcı / profil desteği (şimdilik bilinçli olarak ertelendi; `kullanici_id` kolonu ile ileride eklenecek)
 
+**Özellik fikirleri**
+* [ ] Görev önceliği (düşük/orta/yüksek)
+* [ ] Son tarih (deadline) ve geciken görevlerin vurgulanması
+* [ ] Görev adında anlık arama
+* [ ] Klavye kısayolları (hızlı ekleme/silme)
+* [ ] Sistem tepsisi bildirimi / hatırlatma
+* [ ] Alt görevler (checklist)
+* [ ] Esnek tekrar kuralları (haftada N gün, belirli günler)
+* [ ] İstatistik/geçmişin CSV veya PDF olarak dışa aktarılması
+* [ ] Rozet / başarım sistemi (mevcut mücevher sistemine ek)
+* [ ] Ollama'nın kategori önerisi dışında (ör. haftalık özet) kullanılması
 
 ## 💻 Kurulum
 
