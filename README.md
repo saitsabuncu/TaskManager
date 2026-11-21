@@ -3,10 +3,10 @@
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
 > **Durum:** Kasım 2026'da arayüz modernize edildi (açılır menü butonları,
-> renkli kategori rozetleri, hover animasyonlu birincil buton). Planlanan
-> diğer tüm özellikler (işlem geçmişi, istatistikler, Ollama destekli
-> kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam
-> edilecek.
+> renkli kategori rozetleri, hover animasyonlu birincil buton, anlık arama).
+> Planlanan diğer tüm özellikler (işlem geçmişi, istatistikler, Ollama
+> destekli kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan
+> devam edilecek.
 
 ## 🎯 Projenin Amacı
 
@@ -52,6 +52,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev satırlarında renkli kategori rozetleri (kategori pozisyonuna göre renklendirilmiş pill etiketler)
 * [x] Birincil butonda hover animasyonu (metin rengi fare üzerine gelince yumuşakça canlanır, uzaklaşınca soluklaşır)
 * [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
+* [x] Görev adında anlık arama (kategori filtresiyle birlikte çalışır)
 
 ## 🚧 Planlanan Özellikler
 
@@ -62,7 +63,6 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 **Özellik fikirleri**
 * [ ] Görev önceliği (düşük/orta/yüksek)
 * [ ] Son tarih (deadline) ve geciken görevlerin vurgulanması
-* [ ] Görev adında anlık arama
 * [ ] Klavye kısayolları (hızlı ekleme/silme)
 * [ ] Sistem tepsisi bildirimi / hatırlatma
 * [ ] Alt görevler (checklist)
