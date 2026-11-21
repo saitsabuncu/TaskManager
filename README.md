@@ -53,6 +53,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Birincil butonda hover animasyonu (metin rengi fare üzerine gelince yumuşakça canlanır, uzaklaşınca soluklaşır)
 * [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
 * [x] Görev adında anlık arama (kategori filtresiyle birlikte çalışır)
+* [x] Görev önceliği (düşük/orta/yüksek) — ekleme sırasında seçilir, sonradan "Görev İşlemleri" menüsünden değiştirilebilir, satırlarda renkli rozetle gösterilir
 
 ## 🚧 Planlanan Özellikler
 
@@ -61,7 +62,6 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [ ] Çoklu kullanıcı / profil desteği (şimdilik bilinçli olarak ertelendi; `kullanici_id` kolonu ile ileride eklenecek)
 
 **Özellik fikirleri**
-* [ ] Görev önceliği (düşük/orta/yüksek)
 * [ ] Son tarih (deadline) ve geciken görevlerin vurgulanması
 * [ ] Klavye kısayolları (hızlı ekleme/silme)
 * [ ] Sistem tepsisi bildirimi / hatırlatma
@@ -136,7 +136,7 @@ TaskManager/
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── animasyonlu_buton.py    # Hover'da metin rengi animasyonlu buton (AnimasyonluButon)
-│   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + kategori rozeti (GorevSatiriWidget)
+│   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + öncelik/kategori rozetleri (GorevSatiriWidget)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
 │   ├── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
 │   ├── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
@@ -144,7 +144,7 @@ TaskManager/
 │   ├── istatistikler_penceresi.py # İstatistikler penceresi (IstatistiklerPenceresi)
 │   └── stil.qss                # Merkezi QSS teması
 ├── logic/                      # İş mantığı katmanı
-│   ├── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, IslemTuru
+│   ├── gorev_yonetimi.py       # GorevYonetimi, kategori listesi, öncelik etiketleri, IslemTuru
 │   └── kategori_onerici.py     # Kategori önerisi (anahtar kelime + Ollama)
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
