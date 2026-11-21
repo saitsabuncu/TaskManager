@@ -145,6 +145,7 @@ class GorevYonetimi:
             f'[Öncelik: {ONCELIK_ETIKETLERI[oncelik]}]{son_tarih_notu}{tekrar_notu}',
             gorev_id,
         )
+        return gorev
 
     def gorev_guncelle(self, index: int, yeni_ad: str) -> str:
         yeni_ad = yeni_ad.strip()
