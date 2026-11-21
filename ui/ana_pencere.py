@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 
-from logic.gorev_yonetimi import GorevYonetimi
+from logic.gorev_yonetimi import GorevYonetimi, ONCELIK_ETIKETLERI
 from ui.cop_kutusu_penceresi import CopKutusuPenceresi
 from ui.kategori_duzenleme_penceresi import KategoriDuzenlemePenceresi
 from ui.magaza_penceresi import MagazaPenceresi
@@ -68,6 +68,7 @@ class AnaPencere(QWidget):
                 ("Görev Güncelle", self.gorev_guncelle),
                 ("Görev Sil", self.gorev_sil),
                 ("Kategori Taşı", self.kategori_tasi),
+                ("Öncelik Değiştir", self.oncelik_degistir),
                 ("Tekrarı Aç/Kapat", self.tekrar_durumunu_degistir),
             ],
         )
@@ -231,6 +232,8 @@ class AnaPencere(QWidget):
             gorev["tamamlandi"],
             gorev["tekrarlanan"],
             seri,
+            gorev["oncelik"],
+            ONCELIK_ETIKETLERI[gorev["oncelik"]],
         )
         item.setData(Qt.ItemDataRole.UserRole, gorev["kategori"])
         item.setSizeHint(widget.sizeHint())
@@ -291,6 +294,21 @@ class AnaPencere(QWidget):
             if not kategori_tamam:
                 kategori = self.gorev_yonetimi.kategoriler[0]
 
+            oncelik_etiketleri = list(ONCELIK_ETIKETLERI.values())
+            oncelik_secimi, oncelik_tamam = QInputDialog.getItem(
+                self,
+                "Öncelik Seç",
+                "Görevin önceliği:",
+                oncelik_etiketleri,
+                oncelik_etiketleri.index(ONCELIK_ETIKETLERI[2]),
+                False,
+            )
+            oncelik = (
+                {v: k for k, v in ONCELIK_ETIKETLERI.items()}[oncelik_secimi]
+                if oncelik_tamam
+                else 2
+            )   
+
             tekrar_yaniti = QMessageBox.question(
                 self,
                 "Günlük Tekrar",
@@ -301,7 +319,9 @@ class AnaPencere(QWidget):
             tekrarlanan = tekrar_yaniti == QMessageBox.StandardButton.Yes
 
             try:
-                eklenen = self.gorev_yonetimi.gorev_ekle(gorev, kategori, tekrarlanan)
+                eklenen = self.gorev_yonetimi.gorev_ekle(
+                    gorev, kategori, tekrarlanan, oncelik
+                )
             except ValueError as hata:
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
                 continue
@@ -466,6 +486,41 @@ class AnaPencere(QWidget):
         self._satiri_guncelle(secili_item)
         self.filtreyi_uygula()
 
+    def oncelik_degistir(self):
+        secili_item = self.gorev_listesi.currentItem()
+        if secili_item is None:
+            QMessageBox.information(
+                self,
+                "Görev Seçilmedi",
+                "Önceliğini değiştirmek için önce bir görev seç."
+            )
+            return
+
+        index = self.gorev_listesi.row(secili_item)
+        gorev = self.gorev_yonetimi.gorevler[index]
+
+        oncelik_etiketleri = list(ONCELIK_ETIKETLERI.values())
+        mevcut_index = list(ONCELIK_ETIKETLERI.keys()).index(gorev["oncelik"])
+
+        yeni_etiket, tamam = QInputDialog.getItem(
+            self,
+            "Öncelik Değiştir",
+            f'"{gorev["ad"]}" görevinin yeni önceliği:',
+            oncelik_etiketleri,
+            mevcut_index,
+            False,
+        )
+
+        if not tamam:
+            return
+
+        yeni_oncelik = {v: k for k, v in ONCELIK_ETIKETLERI.items()}[yeni_etiket]
+        if yeni_oncelik == gorev["oncelik"]:
+            return
+
+        self.gorev_yonetimi.gorev_onceligini_degistir(index, yeni_oncelik)
+        self._satiri_guncelle(secili_item)
+        
     # Yeni metod (kategori_tasi metodundan sonra):
     def tekrar_durumunu_degistir(self):
         secili_item = self.gorev_listesi.currentItem()

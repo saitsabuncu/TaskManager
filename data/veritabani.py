@@ -9,6 +9,7 @@ VARSAYILAN_DB_YOLU = Path(__file__).resolve().parent.parent / "gorevler.db"
 COP_KUTUSU_SAKLAMA_GUNU = 30
 VARSAYILAN_KATEGORI = "Genel"
 VARSAYILAN_KATEGORILER = ["Genel", "İş", "Kişisel", "Alışveriş", "Sağlık"]
+VARSAYILAN_ONCELIK = 2  # 1=Düşük, 2=Orta, 3=Yüksek
 VARSAYILAN_MUCEVHER_BAKIYESI = 1320
 VARSAYILAN_ODULLER = [
     ("Kısa Mola (15 dk)", 20),
@@ -53,14 +54,15 @@ class VeriTabani:
         with self._baglanti_ac() as baglanti:
             baglanti.execute(
                 """
-                CREATE TABLE IF NOT EXISTS gorevler (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    ad TEXT NOT NULL,
-                    tamamlandi INTEGER NOT NULL DEFAULT 0,
-                    olusturulma_tarihi TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                    silinme_tarihi TEXT,
-                    kategori TEXT NOT NULL DEFAULT 'Genel'
-                )
+            CREATE TABLE IF NOT EXISTS gorevler (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ad TEXT NOT NULL,
+                tamamlandi INTEGER NOT NULL DEFAULT 0,
+                olusturulma_tarihi TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                silinme_tarihi TEXT,
+                kategori TEXT NOT NULL DEFAULT 'Genel',
+                oncelik INTEGER NOT NULL DEFAULT 2
+            )
                 """
             )
             baglanti.execute(
@@ -158,7 +160,13 @@ class VeriTabani:
                 baglanti.execute(
                     "ALTER TABLE gorevler ADD COLUMN tekrarlanan INTEGER"
                     " NOT NULL DEFAULT 0"
-                )    
+                )
+
+            if "oncelik" not in sutunlar:
+                baglanti.execute(
+                    f"ALTER TABLE gorevler ADD COLUMN oncelik INTEGER "
+                    f"NOT NULL DEFAULT {VARSAYILAN_ONCELIK}"
+                )        
 
     def _varsayilan_kategorileri_ekle(self):
         with self._baglanti_ac() as baglanti:
@@ -198,24 +206,28 @@ class VeriTabani:
                 (f"-{COP_KUTUSU_SAKLAMA_GUNU} days",),
             )
 
-    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str, bool]]:
+    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str, bool, int]]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
-                "SELECT id, ad, tamamlandi, kategori, tekrarlanan FROM gorevler "
+                "SELECT id, ad, tamamlandi, kategori, tekrarlanan, oncelik FROM gorevler "
                 "WHERE silinme_tarihi IS NULL ORDER BY id ASC"
             ).fetchall()
         return [
-            (id_, ad, bool(tamamlandi), kategori, bool(tekrarlanan))
-            for id_, ad, tamamlandi, kategori, tekrarlanan in satirlar
+            (id_, ad, bool(tamamlandi), kategori, bool(tekrarlanan), oncelik)
+            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik in satirlar
         ]
 
-    def gorev_ekle(self, ad: str, kategori: str = VARSAYILAN_KATEGORI, tekrarlanan: bool = False
+    def gorev_ekle(self, 
+                   ad: str, 
+                   kategori: str = VARSAYILAN_KATEGORI, 
+                   tekrarlanan: bool = False,
+                   oncelik: int = VARSAYILAN_ONCELIK,
                    ) -> int:
         with self._baglanti_ac() as baglanti:
             imlec = baglanti.execute(
-                "INSERT INTO gorevler (ad, tamamlandi, kategori, tekrarlanan) "
-                "VALUES (?, 0, ?, ?)",
-                (ad, kategori, int(tekrarlanan)),
+                "INSERT INTO gorevler (ad, tamamlandi, kategori, tekrarlanan, oncelik) "
+                "VALUES (?, 0, ?, ?, ?)",
+                (ad, kategori, int(tekrarlanan), oncelik),
             )
             return imlec.lastrowid
 
@@ -272,6 +284,13 @@ class VeriTabani:
                 "UPDATE gorevler SET kategori = ? WHERE id = ?",
                 (yeni_kategori, gorev_id),
             )
+
+    def gorev_onceligini_degistir(self, gorev_id: int, yeni_oncelik: int):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE gorevler SET oncelik = ? WHERE id = ?",
+                (yeni_oncelik, gorev_id),
+        )
 
     def kategori_adi_guncelle(self, eski_ad: str, yeni_ad: str):
         """Kategoriyi yeniden adlandırır; o kategorideki tüm görevlerin

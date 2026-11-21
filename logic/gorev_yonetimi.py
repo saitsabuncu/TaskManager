@@ -2,10 +2,11 @@ from __future__ import annotations
 from enum import Enum
 from datetime import date, timedelta
 
-from data.veritabani import VeriTabani
+from data.veritabani import VeriTabani, VARSAYILAN_ONCELIK
 
 
 GOREV_TAMAMLAMA_ODULU = 10
+ONCELIK_ETIKETLERI: dict[int, str] = {1: "Düşük", 2: "Orta", 3: "Yüksek"}
 
 class IslemTuru(str, Enum):
     GOREV_EKLENDI = "gorev_eklendi"
@@ -24,6 +25,7 @@ class IslemTuru(str, Enum):
     # IslemTuru enum'una ekle:
     GOREV_TEKRARI_ACILDI = "gorev_tekrari_acildi"
     GOREV_TEKRARI_KAPANDI = "gorev_tekrari_kapandi"
+    GOREV_ONCELIGI_DEGISTIRILDI = "gorev_onceligi_degistirildi"
 
 
 class GorevYonetimi:
@@ -31,7 +33,7 @@ class GorevYonetimi:
 
     Görevler SQLite üzerinden kalıcı olarak saklanır; bu sınıf veritabanı
     katmanıyla UI arasında bir köprü görevi görür. Her görev
-    {"id", "ad", "tamamlandi", "kategori"} şeklinde bir sözlükle temsil edilir.
+    {"id", "ad", "tamamlandi", "kategori", "tekrarlanan", "oncelik"} şeklinde bir sözlükle temsil edilir.
 
     Kategoriler artık veritabanında saklanır (sabit bir Python listesi
     değil), böylece kullanıcı kategori adlarını yeniden adlandırabilir ve
@@ -97,8 +99,9 @@ class GorevYonetimi:
                 "tamamlandi": tamamlandi,
                 "kategori": kategori,
                 "tekrarlanan": tekrarlanan,
+                "oncelik": oncelik,
             }
-            for id_, ad, tamamlandi, kategori, tekrarlanan
+            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik
             in self.veritabani.tum_gorevleri_getir()
         ]
 
@@ -106,7 +109,7 @@ class GorevYonetimi:
         self.kategoriler = self.veritabani.kategorileri_getir()
 
     def gorev_ekle(
-        self, ad: str, kategori: str | None = None, tekrarlanan: bool = False
+        self, ad: str, kategori: str | None = None, tekrarlanan: bool = False, oncelik: int = VARSAYILAN_ONCELIK
     ) -> dict:
         ad = ad.strip()
         if not ad:
@@ -115,23 +118,24 @@ class GorevYonetimi:
         if kategori not in self.kategoriler:
             kategori = self.kategoriler[0]
 
-        gorev_id = self.veritabani.gorev_ekle(ad, kategori, tekrarlanan)
+        gorev_id = self.veritabani.gorev_ekle(ad, kategori, tekrarlanan, oncelik)
         gorev = {
             "id": gorev_id,
             "ad": ad,
             "tamamlandi": False,
             "kategori": kategori,
             "tekrarlanan": tekrarlanan,
+            "oncelik": oncelik,
         }
         self.gorevler.append(gorev)
 
         tekrar_notu = " [Günlük tekrarlanan]" if tekrarlanan else ""
         self._islem_kaydet(
             IslemTuru.GOREV_EKLENDI,
-            f'"{ad}" görevi eklendi. [Kategori: {kategori}]{tekrar_notu}',
+            f'"{ad}" görevi eklendi. [Kategori: {kategori}] '
+            f'[Öncelik: {ONCELIK_ETIKETLERI[oncelik]}]{tekrar_notu}',
             gorev_id,
         )
-        return gorev
 
     def gorev_guncelle(self, index: int, yeni_ad: str) -> str:
         yeni_ad = yeni_ad.strip()
@@ -241,6 +245,26 @@ class GorevYonetimi:
             f'"{yeni_kategori}" kategorisine taşındı.',
             gorev["id"],
         )
+
+    def gorev_onceligini_degistir(self, index: int, yeni_oncelik: int):
+        if not (0 <= index < len(self.gorevler)):
+            raise IndexError("Geçersiz görev seçildi.")
+
+        if yeni_oncelik not in ONCELIK_ETIKETLERI:
+            raise ValueError("Geçersiz öncelik seçildi.")
+
+        gorev = self.gorevler[index]
+        eski_oncelik = gorev["oncelik"]
+        self.veritabani.gorev_onceligini_degistir(gorev["id"], yeni_oncelik)
+        gorev["oncelik"] = yeni_oncelik
+
+        self._islem_kaydet(
+            IslemTuru.GOREV_ONCELIGI_DEGISTIRILDI,
+            f'"{gorev["ad"]}" görevinin önceliği '
+            f'"{ONCELIK_ETIKETLERI[eski_oncelik]}" → '
+            f'"{ONCELIK_ETIKETLERI[yeni_oncelik]}" olarak değiştirildi.',
+            gorev["id"],
+        )    
     # Yeni metod (gorev_kategorisini_degistir metodundan sonra):
     def gorev_tekrarlanmasini_degistir(self, index: int, tekrarlanan: bool):
         if not (0 <= index < len(self.gorevler)):
