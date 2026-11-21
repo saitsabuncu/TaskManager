@@ -1,3 +1,5 @@
+from typing import Callable
+
 from PyQt6.QtWidgets import (
     QWidget,
     QLabel,
@@ -9,7 +11,8 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QComboBox,
-    QFrame,
+    QToolButton,
+    QMenu,
 )
 from PyQt6.QtCore import Qt
 
@@ -48,68 +51,40 @@ class AnaPencere(QWidget):
         self.bakiye_etiketi.setObjectName("bakiyeEtiketi")
         self.gorev_butonu = QPushButton("Görev Ekle")
         self.gorev_butonu.setProperty("role", "primary")
-        self.guncelle_butonu = AnimasyonluButon("Görev Güncelle", canli_renk="#4338ca")
-        self.guncelle_butonu.setProperty("role", "toolbar")
-        self.sil_butonu = AnimasyonluButon("Görev Sil", canli_renk="#dc2626")
-        self.sil_butonu.setObjectName("silButonu")
-        self.sil_butonu.setProperty("role", "toolbar")
-        self.kategori_tasi_butonu = AnimasyonluButon("Kategori Taşı", canli_renk="#4338ca")
-        self.kategori_tasi_butonu.setProperty("role", "toolbar")
-        self.tekrar_butonu = AnimasyonluButon("Tekrarı Aç/Kapat", canli_renk="#4338ca")
-        self.tekrar_butonu.setProperty("role", "toolbar")
-        self.kategorileri_duzenle_butonu = AnimasyonluButon("Kategorileri Düzenle", canli_renk="#4338ca")
-        self.kategorileri_duzenle_butonu.setProperty("role", "toolbar")
-        self.magaza_butonu = AnimasyonluButon("Mağaza", canli_renk="#4338ca")
-        self.magaza_butonu.setProperty("role", "toolbar")
-        self.cop_kutusu_butonu = AnimasyonluButon("Çöp Kutusu", canli_renk="#4338ca")
-        self.cop_kutusu_butonu.setProperty("role", "toolbar")
-        self.islem_gecmisi_butonu = AnimasyonluButon("İşlem Geçmişi", canli_renk="#4338ca")
-        self.islem_gecmisi_butonu.setProperty("role", "toolbar")
-        self.istatistikler_butonu = AnimasyonluButon("İstatistikler", canli_renk="#4338ca")
-        self.istatistikler_butonu.setProperty("role", "toolbar")
         self.gorev_listesi = QListWidget()
 
         self.kategori_etiketi = QLabel("Kategori Filtresi:")
         self.kategori_filtresi = QComboBox()
 
         self.gorev_butonu.clicked.connect(self.gorev_ekle)
-        self.guncelle_butonu.clicked.connect(self.gorev_guncelle)
-        self.sil_butonu.clicked.connect(self.gorev_sil)
-        self.kategori_tasi_butonu.clicked.connect(self.kategori_tasi)
-        self.tekrar_butonu.clicked.connect(self.tekrar_durumunu_degistir)
-        self.kategorileri_duzenle_butonu.clicked.connect(self.kategorileri_duzenle)
-        self.magaza_butonu.clicked.connect(self.magazayi_ac)
-        self.cop_kutusu_butonu.clicked.connect(self.cop_kutusunu_ac)
-        self.islem_gecmisi_butonu.clicked.connect(self.islem_gecmisini_ac)
-        self.istatistikler_butonu.clicked.connect(self.istatistikleri_ac)
-        
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
 
-        gorev_kutusu = self._arac_kutusu_olustur(
-            "GÖREV İŞLEMLERİ",
+        gorev_islemleri_butonu = self._menu_butonu_olustur(
+            "Görev İşlemleri",
             [
-                self.gorev_butonu,
-                self.guncelle_butonu,
-                self.sil_butonu,
-                self.kategori_tasi_butonu,
-                self.tekrar_butonu,
+                ("Görev Güncelle", self.gorev_guncelle),
+                ("Görev Sil", self.gorev_sil),
+                ("Kategori Taşı", self.kategori_tasi),
+                ("Tekrarı Aç/Kapat", self.tekrar_durumunu_degistir),
             ],
         )
 
-        yonetim_kutusu = self._arac_kutusu_olustur(
-            "YÖNETİM",
+        yonetim_butonu = self._menu_butonu_olustur(
+            "Yönetim",
             [
-                self.kategorileri_duzenle_butonu,
-                self.magaza_butonu,
-                self.cop_kutusu_butonu,
-                self.islem_gecmisi_butonu,
-                self.istatistikler_butonu,
+                ("Kategorileri Düzenle", self.kategorileri_duzenle),
+                ("Mağaza", self.magazayi_ac),
+                ("Çöp Kutusu", self.cop_kutusunu_ac),
+                ("İşlem Geçmişi", self.islem_gecmisini_ac),
+                ("İstatistikler", self.istatistikleri_ac),
             ],
         )
 
         arac_cubugu_duzeni = QHBoxLayout()
-        arac_cubugu_duzeni.addWidget(gorev_kutusu)
-        arac_cubugu_duzeni.addWidget(yonetim_kutusu)
+        arac_cubugu_duzeni.addWidget(self.gorev_butonu)
+        arac_cubugu_duzeni.addWidget(gorev_islemleri_butonu)
+        arac_cubugu_duzeni.addWidget(yonetim_butonu)
+        arac_cubugu_duzeni.addStretch()
 
         filtre_duzeni = QHBoxLayout()
         filtre_duzeni.addWidget(self.kategori_etiketi)
@@ -126,30 +101,22 @@ class AnaPencere(QWidget):
         self._kategori_filtresini_doldur()
         self._listeyi_yenile()
 
-    def _arac_kutusu_olustur(
-        self, baslik: str, butonlar: list[QPushButton]
-    ) -> QFrame:
-        # Bir buton grubunu başlıklı, kart görünümlü bir kutuya sarar
-        # (bkz. #aracKutusu / [role="toolbar"] stil.qss kuralları).
-        kutu = QFrame()
-        kutu.setObjectName("aracKutusu")
+    def _menu_butonu_olustur(
+        self, baslik: str, eylemler: list[tuple[str, Callable[[], None]]]
+    ) -> QToolButton:
+        # Birden fazla eylemi tek bir açılır menü butonunda toplar; araç
+        # çubuğunun yeni özelliklerle büyüdükçe buton çöplüğüne
+        # dönüşmesini engeller (bkz. QToolButton/QMenu stil.qss kuralları).
+        buton = QToolButton()
+        buton.setText(f"{baslik} ▾")
+        buton.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
 
-        baslik_etiketi = QLabel(baslik)
-        baslik_etiketi.setObjectName("grupBasligi")
+        menu = QMenu(buton)
+        for etiket, islev in eylemler:
+            menu.addAction(etiket, islev)
+        buton.setMenu(menu)
 
-        buton_duzeni = QHBoxLayout()
-        buton_duzeni.setContentsMargins(6, 2, 6, 6)
-        for buton in butonlar:
-            buton_duzeni.addWidget(buton)
-
-        kutu_duzeni = QVBoxLayout()
-        kutu_duzeni.setContentsMargins(4, 8, 4, 4)
-        kutu_duzeni.setSpacing(2)
-        kutu_duzeni.addWidget(baslik_etiketi)
-        kutu_duzeni.addLayout(buton_duzeni)
-        kutu.setLayout(kutu_duzeni)
-
-        return kutu    
+        return buton
 
     def _kullanici_adini_gerekirse_sor(self):
         # İlk açılışta kullanıcı adı henüz kaydedilmemişse sorulur; bir kere
