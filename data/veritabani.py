@@ -61,7 +61,8 @@ class VeriTabani:
                 olusturulma_tarihi TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 silinme_tarihi TEXT,
                 kategori TEXT NOT NULL DEFAULT 'Genel',
-                oncelik INTEGER NOT NULL DEFAULT 2
+                oncelik INTEGER NOT NULL DEFAULT 2,
+                son_tarih TEXT
             )
                 """
             )
@@ -166,7 +167,10 @@ class VeriTabani:
                 baglanti.execute(
                     f"ALTER TABLE gorevler ADD COLUMN oncelik INTEGER "
                     f"NOT NULL DEFAULT {VARSAYILAN_ONCELIK}"
-                )        
+                )
+
+            if "son_tarih" not in sutunlar:
+                baglanti.execute("ALTER TABLE gorevler ADD COLUMN son_tarih TEXT")            
 
     def _varsayilan_kategorileri_ekle(self):
         with self._baglanti_ac() as baglanti:
@@ -206,15 +210,17 @@ class VeriTabani:
                 (f"-{COP_KUTUSU_SAKLAMA_GUNU} days",),
             )
 
-    def tum_gorevleri_getir(self) -> list[tuple[int, str, bool, str, bool, int]]:
+    def tum_gorevleri_getir(
+            self
+            ) -> list[tuple[int, str, bool, str, bool, int, str | None]]:
         with self._baglanti_ac() as baglanti:
             satirlar = baglanti.execute(
-                "SELECT id, ad, tamamlandi, kategori, tekrarlanan, oncelik FROM gorevler "
-                "WHERE silinme_tarihi IS NULL ORDER BY id ASC"
+                "SELECT id, ad, tamamlandi, kategori, tekrarlanan, oncelik, son_tarih "
+                "FROM gorevler WHERE silinme_tarihi IS NULL ORDER BY id ASC"
             ).fetchall()
         return [
-            (id_, ad, bool(tamamlandi), kategori, bool(tekrarlanan), oncelik)
-            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik in satirlar
+            (id_, ad, bool(tamamlandi), kategori, bool(tekrarlanan), oncelik, son_tarih)
+            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik, son_tarih in satirlar
         ]
 
     def gorev_ekle(self, 
@@ -222,12 +228,14 @@ class VeriTabani:
                    kategori: str = VARSAYILAN_KATEGORI, 
                    tekrarlanan: bool = False,
                    oncelik: int = VARSAYILAN_ONCELIK,
+                   son_tarih: str | None = None,
                    ) -> int:
         with self._baglanti_ac() as baglanti:
             imlec = baglanti.execute(
-                "INSERT INTO gorevler (ad, tamamlandi, kategori, tekrarlanan, oncelik) "
-                "VALUES (?, 0, ?, ?, ?)",
-                (ad, kategori, int(tekrarlanan), oncelik),
+                "INSERT INTO gorevler (ad, tamamlandi, kategori, tekrarlanan, oncelik, son_tarih) "
+                "VALUES (?, 0, ?, ?, ?, ?)",
+
+                (ad, kategori, int(tekrarlanan), oncelik, son_tarih),
             )
             return imlec.lastrowid
 
@@ -291,6 +299,13 @@ class VeriTabani:
                 "UPDATE gorevler SET oncelik = ? WHERE id = ?",
                 (yeni_oncelik, gorev_id),
         )
+
+    def gorev_son_tarihini_degistir(self, gorev_id: int, yeni_son_tarih: str | None):
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute(
+                "UPDATE gorevler SET son_tarih = ? WHERE id = ?",
+                (yeni_son_tarih, gorev_id),
+            )            
 
     def kategori_adi_guncelle(self, eski_ad: str, yeni_ad: str):
         """Kategoriyi yeniden adlandırır; o kategorideki tüm görevlerin

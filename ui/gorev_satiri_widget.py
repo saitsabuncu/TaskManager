@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date
+
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QWidget
 
@@ -41,6 +43,8 @@ class GorevSatiriWidget(QWidget):
         self._ad_etiketi = QLabel()
         self._seri_etiketi = QLabel()
         self._seri_etiketi.setObjectName("seriEtiketi")
+        self._son_tarih_etiketi = QLabel()
+        self._son_tarih_etiketi.setObjectName("sonTarihEtiketi")
         self._oncelik_rozeti = QLabel()
 
         self._kategori_rozeti = QLabel()
@@ -54,6 +58,7 @@ class GorevSatiriWidget(QWidget):
         duzen.addWidget(self._checkbox)
         duzen.addWidget(self._ad_etiketi, 1)
         duzen.addWidget(self._seri_etiketi)
+        duzen.addWidget(self._son_tarih_etiketi)
         duzen.addWidget(self._oncelik_rozeti)
         duzen.addWidget(self._kategori_rozeti)
 
@@ -67,6 +72,8 @@ class GorevSatiriWidget(QWidget):
         seri: int,
         oncelik: int,
         oncelik_etiketi: str,
+        son_tarih: str | None,
+        gecikmis: bool,
     ) -> None:
         self._checkbox.blockSignals(True)
         self._checkbox.setChecked(tamamlandi)
@@ -112,3 +119,13 @@ class GorevSatiriWidget(QWidget):
             f"font-weight: 600;"
             f"}}"
         )
+
+        if son_tarih:
+            tarih_metni = date.fromisoformat(son_tarih).strftime("%d.%m.%Y")
+            self._son_tarih_etiketi.setText(f"📅 {tarih_metni}")
+            self._son_tarih_etiketi.setStyleSheet(
+                "color: #dc2626; font-weight: 600;" if gecikmis else "color: #64748b;"
+            )
+        else:
+            self._son_tarih_etiketi.setText("")
+            self._son_tarih_etiketi.setStyleSheet("")    

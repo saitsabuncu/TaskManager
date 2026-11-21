@@ -26,6 +26,7 @@ class IslemTuru(str, Enum):
     GOREV_TEKRARI_ACILDI = "gorev_tekrari_acildi"
     GOREV_TEKRARI_KAPANDI = "gorev_tekrari_kapandi"
     GOREV_ONCELIGI_DEGISTIRILDI = "gorev_onceligi_degistirildi"
+    GOREV_SON_TARIHI_DEGISTIRILDI = "gorev_son_tarihi_degistirildi"
 
 
 class GorevYonetimi:
@@ -100,8 +101,9 @@ class GorevYonetimi:
                 "kategori": kategori,
                 "tekrarlanan": tekrarlanan,
                 "oncelik": oncelik,
+                "son_tarih": son_tarih,
             }
-            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik
+            for id_, ad, tamamlandi, kategori, tekrarlanan, oncelik, son_tarih
             in self.veritabani.tum_gorevleri_getir()
         ]
 
@@ -109,7 +111,12 @@ class GorevYonetimi:
         self.kategoriler = self.veritabani.kategorileri_getir()
 
     def gorev_ekle(
-        self, ad: str, kategori: str | None = None, tekrarlanan: bool = False, oncelik: int = VARSAYILAN_ONCELIK
+        self, 
+        ad: str, 
+        kategori: str | None = None, 
+        tekrarlanan: bool = False, 
+        oncelik: int = VARSAYILAN_ONCELIK,
+        son_tarih: str | None = None,
     ) -> dict:
         ad = ad.strip()
         if not ad:
@@ -118,7 +125,7 @@ class GorevYonetimi:
         if kategori not in self.kategoriler:
             kategori = self.kategoriler[0]
 
-        gorev_id = self.veritabani.gorev_ekle(ad, kategori, tekrarlanan, oncelik)
+        gorev_id = self.veritabani.gorev_ekle(ad, kategori, tekrarlanan, oncelik, son_tarih)
         gorev = {
             "id": gorev_id,
             "ad": ad,
@@ -126,14 +133,16 @@ class GorevYonetimi:
             "kategori": kategori,
             "tekrarlanan": tekrarlanan,
             "oncelik": oncelik,
+            "son_tarih": son_tarih,
         }
         self.gorevler.append(gorev)
 
         tekrar_notu = " [Günlük tekrarlanan]" if tekrarlanan else ""
+        son_tarih_notu = f" [Son tarih: {son_tarih}]" if son_tarih else ""
         self._islem_kaydet(
             IslemTuru.GOREV_EKLENDI,
             f'"{ad}" görevi eklendi. [Kategori: {kategori}] '
-            f'[Öncelik: {ONCELIK_ETIKETLERI[oncelik]}]{tekrar_notu}',
+            f'[Öncelik: {ONCELIK_ETIKETLERI[oncelik]}]{son_tarih_notu}{tekrar_notu}',
             gorev_id,
         )
 
@@ -264,7 +273,30 @@ class GorevYonetimi:
             f'"{ONCELIK_ETIKETLERI[eski_oncelik]}" → '
             f'"{ONCELIK_ETIKETLERI[yeni_oncelik]}" olarak değiştirildi.',
             gorev["id"],
-        )    
+        )
+        
+    def gorev_son_tarihini_degistir(self, index: int, yeni_son_tarih: str | None):
+        if not (0 <= index < len(self.gorevler)):
+            raise IndexError("Geçersiz görev seçildi.")
+
+        gorev = self.gorevler[index]
+        eski_son_tarih = gorev["son_tarih"]
+        self.veritabani.gorev_son_tarihini_degistir(gorev["id"], yeni_son_tarih)
+        gorev["son_tarih"] = yeni_son_tarih
+
+        self._islem_kaydet(
+            IslemTuru.GOREV_SON_TARIHI_DEGISTIRILDI,
+            f'"{gorev["ad"]}" görevinin son tarihi '
+            f'"{eski_son_tarih or "yok"}" → "{yeni_son_tarih or "yok"}" olarak değiştirildi.',
+            gorev["id"],
+        )
+
+    def gorev_gecikmis_mi(self, gorev: dict) -> bool:
+        """Son tarihi geçmiş ve henüz tamamlanmamış görevler için True döner."""
+        if gorev["son_tarih"] is None or gorev["tamamlandi"]:
+            return False
+        return date.fromisoformat(gorev["son_tarih"]) < date.today()  
+
     # Yeni metod (gorev_kategorisini_degistir metodundan sonra):
     def gorev_tekrarlanmasini_degistir(self, index: int, tekrarlanan: bool):
         if not (0 <= index < len(self.gorevler)):

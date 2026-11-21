@@ -26,7 +26,8 @@ from ui.istatistikler_penceresi import IstatistiklerPenceresi
 
 from logic.kategori_onerici import kategori_tahmin_et
 from ui.gorev_satiri_widget import GorevSatiriWidget
-from ui.animasyonlu_buton import AnimasyonluButon
+
+from ui.son_tarih_dialog import SonTarihDialog
 
 TUM_KATEGORILER = "Tümü"
 
@@ -69,6 +70,7 @@ class AnaPencere(QWidget):
                 ("Görev Sil", self.gorev_sil),
                 ("Kategori Taşı", self.kategori_tasi),
                 ("Öncelik Değiştir", self.oncelik_degistir),
+                ("Son Tarih Belirle", self.son_tarih_belirle),
                 ("Tekrarı Aç/Kapat", self.tekrar_durumunu_degistir),
             ],
         )
@@ -225,6 +227,7 @@ class AnaPencere(QWidget):
             else 0
         )
 
+        gecikmis = self.gorev_yonetimi.gorev_gecikmis_mi(gorev)
         widget.gorevi_goster(
             gorev["ad"],
             gorev["kategori"],
@@ -234,6 +237,8 @@ class AnaPencere(QWidget):
             seri,
             gorev["oncelik"],
             ONCELIK_ETIKETLERI[gorev["oncelik"]],
+            gorev["son_tarih"],
+            gecikmis,
         )
         item.setData(Qt.ItemDataRole.UserRole, gorev["kategori"])
         item.setSizeHint(widget.sizeHint())
@@ -309,6 +314,10 @@ class AnaPencere(QWidget):
                 else 2
             )   
 
+            son_tarih_dialogu = SonTarihDialog("Son Tarih", None, self)
+            son_tarih = (
+                son_tarih_dialogu.secilen_tarih() if son_tarih_dialogu.exec() else None
+            )
             tekrar_yaniti = QMessageBox.question(
                 self,
                 "Günlük Tekrar",
@@ -320,7 +329,7 @@ class AnaPencere(QWidget):
 
             try:
                 eklenen = self.gorev_yonetimi.gorev_ekle(
-                    gorev, kategori, tekrarlanan, oncelik
+                    gorev, kategori, tekrarlanan, oncelik, son_tarih
                 )
             except ValueError as hata:
                 QMessageBox.warning(self, "Geçersiz Görev", str(hata))
@@ -520,7 +529,31 @@ class AnaPencere(QWidget):
 
         self.gorev_yonetimi.gorev_onceligini_degistir(index, yeni_oncelik)
         self._satiri_guncelle(secili_item)
-        
+
+    def son_tarih_belirle(self):
+        secili_item = self.gorev_listesi.currentItem()
+        if secili_item is None:
+            QMessageBox.information(
+                self,
+                "Görev Seçilmedi",
+                "Son tarih belirlemek için önce bir görev seç."
+            )
+            return
+
+        index = self.gorev_listesi.row(secili_item)
+        gorev = self.gorev_yonetimi.gorevler[index]
+
+        dialog = SonTarihDialog("Son Tarih Belirle", gorev["son_tarih"], self)
+        if not dialog.exec():
+            return
+
+        yeni_son_tarih = dialog.secilen_tarih()
+        if yeni_son_tarih == gorev["son_tarih"]:
+            return
+
+        self.gorev_yonetimi.gorev_son_tarihini_degistir(index, yeni_son_tarih)
+        self._satiri_guncelle(secili_item)
+
     # Yeni metod (kategori_tasi metodundan sonra):
     def tekrar_durumunu_degistir(self):
         secili_item = self.gorev_listesi.currentItem()
