@@ -3,10 +3,10 @@
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
 > **Durum:** Kasım 2026'da arayüz modernize edildi (açılır menü butonları,
-> renkli kategori rozetleri, hover animasyonlu birincil buton, anlık arama).
-> Planlanan diğer tüm özellikler (işlem geçmişi, istatistikler, Ollama
-> destekli kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan
-> devam edilecek.
+> renkli kategori rozetleri, hover animasyonlu birincil buton, anlık arama)
+> ve `pytest` ile otomatik test altyapısı kuruldu. Planlanan diğer tüm
+> özellikler (işlem geçmişi, istatistikler, Ollama destekli kategori
+> önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam edilecek.
 
 ## 🎯 Projenin Amacı
 
@@ -20,6 +20,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * PyQt6
 * SQLite
 * Git / GitHub
+* pytest (otomatik testler)
 
 ## 📌 Mevcut Özellikler
 
@@ -55,11 +56,11 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev adında anlık arama (kategori filtresiyle birlikte çalışır)
 * [x] Görev önceliği (düşük/orta/yüksek) — ekleme sırasında seçilir, sonradan "Görev İşlemleri" menüsünden değiştirilebilir, satırlarda renkli rozetle gösterilir
 * [x] Son tarih (deadline) — opsiyonel tarih seçimi, "Görev İşlemleri" menüsünden değiştirilebilir, tamamlanmamış ve süresi geçmiş görevler kırmızı etiketle vurgulanır
+* [x] Otomatik testler (`pytest`) — `logic/gorev_yonetimi.py` ve `logic/kategori_onerici.py` için (Ollama çağrıları mock'lanır, geçici dosya tabanlı veritabanı fixture'ı kullanılır)
 
 ## 🚧 Planlanan Özellikler
 
 **Teknik borç**
-* [ ] Otomatik testler (`pytest`) — önce `logic/gorev_yonetimi.py` ve `logic/kategori_onerici.py` için
 * [ ] Çoklu kullanıcı / profil desteği (şimdilik bilinçli olarak ertelendi; `kullanici_id` kolonu ile ileride eklenecek)
 
 **Özellik fikirleri**
@@ -124,6 +125,13 @@ python main.py
 
 Uygulama ilk çalıştırmada proje klasöründe `gorevler.db` adlı bir SQLite veritabanı dosyası oluşturur (bu dosya Git'e dahil edilmez).
 
+### Testleri çalıştırma
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ## 📁 Proje Yapısı
 
 ```text
@@ -133,6 +141,8 @@ TaskManager/
 ├── .gitignore                  # Git tarafından yok sayılan dosyalar
 ├── main.py                     # Uygulamanın başlangıç dosyası
 ├── Modelfile                   # Ollama "taskmanager-kategori" modeli tanımı
+├── pytest.ini                  # pytest yapılandırması (pythonpath, testpaths)
+├── requirements-dev.txt        # Geliştirme bağımlılıkları (pytest)
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── animasyonlu_buton.py    # Hover'da metin rengi animasyonlu buton (AnimasyonluButon)
@@ -149,6 +159,10 @@ TaskManager/
 │   └── kategori_onerici.py     # Kategori önerisi (anahtar kelime + Ollama)
 ├── data/                       # Veri erişim katmanı
 │   └── veritabani.py           # VeriTabani (SQLite CRUD işlemleri)
+├── tests/                      # pytest test paketi
+│   ├── conftest.py             # Geçici dosya tabanlı VeriTabani/GorevYonetimi fixture'ları
+│   ├── test_gorev_yonetimi.py  # Ekleme, silme, tamamlama/bakiye, öncelik, son tarih testleri
+│   └── test_kategori_onerici.py # Anahtar kelime eşleşmesi ve mock'lanmış Ollama testleri
 ├── gorevler.db                 # SQLite veritabanı (Git'e dahil değil)
 ├── README.md                   # Proje açıklaması
 └── requirements.txt            # Python bağımlılıkları
@@ -159,7 +173,7 @@ TaskManager/
 
 Bu proje küçük adımlarla geliştirilmektedir.
 
-Her yeni özellik önce geliştirilir ve test edilir, ardından Git ile commit edilerek GitHub'a gönderilir.
+Her yeni özellik önce geliştirilir, test edilir (manuel ve/veya `pytest` ile), ardından Git ile commit edilerek GitHub'a gönderilir.
 
 ## 📄 Lisans
 
