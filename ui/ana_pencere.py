@@ -24,7 +24,6 @@ from ui.islem_gecmisi_penceresi import IslemGecmisiPenceresi
 from ui.istatistikler_penceresi import IstatistiklerPenceresi
 
 from logic.kategori_onerici import kategori_tahmin_et
-from logic.kategori_onerici import kategori_tahmin_et
 from ui.gorev_satiri_widget import GorevSatiriWidget
 from ui.animasyonlu_buton import AnimasyonluButon
 
