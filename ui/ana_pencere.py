@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QComboBox,
+    QLineEdit,
     QToolButton,
     QMenu,
 )
@@ -54,9 +55,12 @@ class AnaPencere(QWidget):
 
         self.kategori_etiketi = QLabel("Kategori Filtresi:")
         self.kategori_filtresi = QComboBox()
+        self.arama_kutusu = QLineEdit()
+        self.arama_kutusu.setPlaceholderText("Görevlerde ara...")
 
         self.gorev_butonu.clicked.connect(self.gorev_ekle)
         self.kategori_filtresi.currentTextChanged.connect(self.filtreyi_uygula)
+        self.arama_kutusu.textChanged.connect(self.filtreyi_uygula)
 
         gorev_islemleri_butonu = self._menu_butonu_olustur(
             "Görev İşlemleri",
@@ -88,6 +92,7 @@ class AnaPencere(QWidget):
         filtre_duzeni = QHBoxLayout()
         filtre_duzeni.addWidget(self.kategori_etiketi)
         filtre_duzeni.addWidget(self.kategori_filtresi)
+        filtre_duzeni.addWidget(self.arama_kutusu, 1)
 
         duzen = QVBoxLayout()
         duzen.addWidget(self.hosgeldin_etiketi)
@@ -179,7 +184,7 @@ class AnaPencere(QWidget):
         self.gorev_listesi.clear()
         for _ in self.gorev_yonetimi.gorevler:
             self._satir_ekle()
-        self.filtreyi_uygula(self.kategori_filtresi.currentText())
+        self.filtreyi_uygula()
 
     def _satir_ekle(self) -> QListWidgetItem:
         # Yeni, boş bir satır oluşturup listeye ekler; görünür içeriği
@@ -232,12 +237,24 @@ class AnaPencere(QWidget):
 
     
 
-    def filtreyi_uygula(self, secilen_kategori: str):
+    def filtreyi_uygula(self) -> None:
+        # Hem kategori filtresine hem arama kutusuna göre görünürlüğü
+        # birlikte hesaplar; ikisi de currentTextChanged/textChanged
+        # sinyalleriyle bu tek metoda yönlenir.
+        secilen_kategori = self.kategori_filtresi.currentText()
+        arama_metni = self.arama_kutusu.text().strip().lower()
+
         for i in range(self.gorev_listesi.count()):
             item = self.gorev_listesi.item(i)
             kategori = item.data(Qt.ItemDataRole.UserRole)
-            gizli = secilen_kategori != TUM_KATEGORILER and kategori != secilen_kategori
-            item.setHidden(gizli)
+            gorev_adi = self.gorev_yonetimi.gorevler[i]["ad"].lower()
+
+            kategori_uyumsuz = (
+                secilen_kategori != TUM_KATEGORILER and kategori != secilen_kategori
+            )
+            arama_uyumsuz = arama_metni != "" and arama_metni not in gorev_adi
+
+            item.setHidden(kategori_uyumsuz or arama_uyumsuz)
 
     # gorev_ekle metodunu değiştir (kategori seçiminden sonra tekrar sorusu eklendi):
     def gorev_ekle(self):
@@ -290,7 +307,7 @@ class AnaPencere(QWidget):
                 continue
 
             self._satir_ekle()
-            self.filtreyi_uygula(self.kategori_filtresi.currentText())
+            self.filtreyi_uygula()
 
             devam = QMessageBox.question(
                 self,
@@ -447,7 +464,7 @@ class AnaPencere(QWidget):
         self.gorev_yonetimi.gorev_kategorisini_degistir(index, yeni_kategori)
 
         self._satiri_guncelle(secili_item)
-        self.filtreyi_uygula(self.kategori_filtresi.currentText())
+        self.filtreyi_uygula()
 
     # Yeni metod (kategori_tasi metodundan sonra):
     def tekrar_durumunu_degistir(self):
