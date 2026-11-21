@@ -54,6 +54,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Akıllı kategori önerisi (anahtar kelime eşleştirme + Ollama ile, görev eklerken otomatik önerilir)
 * [x] Görev adında anlık arama (kategori filtresiyle birlikte çalışır)
 * [x] Görev önceliği (düşük/orta/yüksek) — ekleme sırasında seçilir, sonradan "Görev İşlemleri" menüsünden değiştirilebilir, satırlarda renkli rozetle gösterilir
+* [x] Son tarih (deadline) — opsiyonel tarih seçimi, "Görev İşlemleri" menüsünden değiştirilebilir, tamamlanmamış ve süresi geçmiş görevler kırmızı etiketle vurgulanır
 
 ## 🚧 Planlanan Özellikler
 
@@ -62,7 +63,6 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [ ] Çoklu kullanıcı / profil desteği (şimdilik bilinçli olarak ertelendi; `kullanici_id` kolonu ile ileride eklenecek)
 
 **Özellik fikirleri**
-* [ ] Son tarih (deadline) ve geciken görevlerin vurgulanması
 * [ ] Klavye kısayolları (hızlı ekleme/silme)
 * [ ] Sistem tepsisi bildirimi / hatırlatma
 * [ ] Alt görevler (checklist)
@@ -136,7 +136,8 @@ TaskManager/
 ├── ui/                         # Arayüz katmanı
 │   ├── ana_pencere.py          # Ana pencere (AnaPencere)
 │   ├── animasyonlu_buton.py    # Hover'da metin rengi animasyonlu buton (AnimasyonluButon)
-│   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + öncelik/kategori rozetleri (GorevSatiriWidget)
+│   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + son tarih/öncelik/kategori rozetleri (GorevSatiriWidget)
+│   ├── son_tarih_dialog.py     # Görev için opsiyonel son tarih seçim diyaloğu (SonTarihDialog)
 │   ├── cop_kutusu_penceresi.py # Çöp Kutusu penceresi (CopKutusuPenceresi)
 │   ├── kategori_duzenleme_penceresi.py # Kategori yeniden adlandırma penceresi
 │   ├── magaza_penceresi.py     # Mağaza penceresi (MagazaPenceresi)
