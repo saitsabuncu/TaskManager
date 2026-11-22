@@ -286,6 +286,10 @@ class VeriTabani:
             ).fetchall()
         return [ad for (ad,) in satirlar]
 
+    def kategori_ekle(self, ad: str) -> None:
+        with self._baglanti_ac() as baglanti:
+            baglanti.execute("INSERT INTO kategoriler (ad) VALUES (?)", (ad,))
+
     def gorev_kategorisini_degistir(self, gorev_id: int, yeni_kategori: str):
         with self._baglanti_ac() as baglanti:
             baglanti.execute(

@@ -27,6 +27,8 @@ class IslemTuru(str, Enum):
     GOREV_TEKRARI_KAPANDI = "gorev_tekrari_kapandi"
     GOREV_ONCELIGI_DEGISTIRILDI = "gorev_onceligi_degistirildi"
     GOREV_SON_TARIHI_DEGISTIRILDI = "gorev_son_tarihi_degistirildi"
+    
+    KATEGORI_EKLENDI = "kategori_eklendi"
 
 
 class GorevYonetimi:
@@ -339,7 +341,21 @@ class GorevYonetimi:
         self._islem_kaydet(
             IslemTuru.KATEGORI_YENIDEN_ADLANDIRILDI,
             f'"{eski_ad}" kategorisi "{yeni_ad}" olarak yeniden adlandırıldı.',
-        )        
+        ) 
+
+    def kategori_ekle(self, ad: str) -> str:
+        ad = ad.strip()
+        if not ad:
+            raise ValueError("Kategori adı boş bırakılamaz!")
+
+        if ad in self.kategoriler:
+            raise ValueError(f'"{ad}" adında bir kategori zaten var.')
+
+        self.veritabani.kategori_ekle(ad)
+        self.kategoriler.append(ad)
+
+        self._islem_kaydet(IslemTuru.KATEGORI_EKLENDI, f'"{ad}" kategorisi eklendi.')
+        return ad           
 
     def cop_kutusunu_getir(self) -> list[dict]:
         return [

@@ -79,6 +79,7 @@ class AnaPencere(QWidget):
         yonetim_butonu = self._menu_butonu_olustur(
             "Yönetim",
             [
+                ("Yeni Kategori Ekle", self.kategori_ekle),
                 ("Kategorileri Düzenle", self.kategorileri_duzenle),
                 ("Mağaza", self.magazayi_ac),
                 ("Çöp Kutusu", self.cop_kutusunu_ac),
@@ -140,6 +141,7 @@ class AnaPencere(QWidget):
         QShortcut(QKeySequence("Ctrl+O"), self, activated=self.oncelik_degistir)
         QShortcut(QKeySequence("Ctrl+D"), self, activated=self.son_tarih_belirle)
         QShortcut(QKeySequence("Ctrl+T"), self, activated=self.tekrar_durumunu_degistir)
+        QShortcut(QKeySequence("Ctrl+Shift+N"), self, activated=self.kategori_ekle)
         QShortcut(QKeySequence("Ctrl+Shift+K"), self, activated=self.kategorileri_duzenle)
         QShortcut(QKeySequence("Ctrl+M"), self, activated=self.magazayi_ac)
         QShortcut(QKeySequence("Ctrl+Shift+C"), self, activated=self.cop_kutusunu_ac)
@@ -615,6 +617,22 @@ class AnaPencere(QWidget):
             f'{"her gün tekrar ediyor." if yeni_durum else "tekrar etmiyor."}'
         )    
 
+    def kategori_ekle(self):
+        ad, tamam = QInputDialog.getText(
+            self, "Yeni Kategori", "Kategori adı:"
+        )
+
+        if not tamam:
+            return
+
+        try:
+            self.gorev_yonetimi.kategori_ekle(ad)
+        except ValueError as hata:
+            QMessageBox.warning(self, "Geçersiz Kategori", str(hata))
+            return
+
+        self._kategori_filtresini_doldur()
+        
     def kategorileri_duzenle(self):
         pencere = KategoriDuzenlemePenceresi(self.gorev_yonetimi, self)
         pencere.exec()

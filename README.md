@@ -36,6 +36,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] SQLite veritabanı ile kalıcı saklama
 * [x] Görevleri kategorilere ayırma (Genel, İş, Kişisel, Alışveriş, Sağlık) ve kategoriye göre filtreleme
 * [x] Görevi başka bir kategoriye taşıma
+* [x] Yeni kategori ekleme
 * [x] Kategori adlarını düzenleme (yeniden adlandırma)
 * [x] Mücevher kazanma sistemi (görev tamamlandığında mücevher kazanılır, işaret kaldırılınca geri alınır)
 * [x] Görev listesinde seçili satırın renkle belirginleştirilmesi
@@ -58,7 +59,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev önceliği (düşük/orta/yüksek) — ekleme sırasında seçilir, sonradan "Görev İşlemleri" menüsünden değiştirilebilir, satırlarda renkli rozetle gösterilir
 * [x] Son tarih (deadline) — opsiyonel tarih seçimi, "Görev İşlemleri" menüsünden değiştirilebilir, tamamlanmamış ve süresi geçmiş görevler kırmızı etiketle vurgulanır
 * [x] Otomatik testler (`pytest`) — `logic/gorev_yonetimi.py` ve `logic/kategori_onerici.py` için (Ollama çağrıları mock'lanır, geçici dosya tabanlı veritabanı fixture'ı kullanılır)
-* [x] Klavye kısayolları — görev ekleme/güncelleme/silme/tamamlama, kategori taşıma, öncelik/son tarih/tekrar değiştirme, pencere açma kısayolları ve liste/arama/filtre odaklama (bkz. "Klavye Kısayolları" bölümü)
+* [x] Klavye kısayolları — görev ekleme/güncelleme/silme/tamamlama, kategori ekleme/taşıma, öncelik/son tarih/tekrar değiştirme, pencere açma kısayolları ve liste/arama/filtre odaklama (bkz. "Klavye Kısayolları" bölümü)
 
 ## 🚧 Planlanan Özellikler
 
@@ -85,6 +86,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 | `Ctrl+O` | Öncelik Değiştir |
 | `Ctrl+D` | Son Tarih Belirle |
 | `Ctrl+T` | Tekrarı Aç/Kapat |
+| `Ctrl+Shift+N` | Yeni Kategori Ekle |
 | `Ctrl+Shift+K` | Kategorileri Düzenle |
 | `Ctrl+M` | Mağaza |
 | `Ctrl+Shift+C` | Çöp Kutusu |
