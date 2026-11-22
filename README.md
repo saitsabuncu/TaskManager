@@ -3,10 +3,11 @@
 Python ve PyQt6 kullanılarak geliştirilen masaüstü görev yönetimi uygulaması.
 
 > **Durum:** Kasım 2026'da arayüz modernize edildi (açılır menü butonları,
-> renkli kategori rozetleri, hover animasyonlu birincil buton, anlık arama)
-> ve `pytest` ile otomatik test altyapısı kuruldu. Planlanan diğer tüm
-> özellikler (işlem geçmişi, istatistikler, Ollama destekli kategori
-> önerisi) tamamlandı. Yeni bir fikir geldiğinde buradan devam edilecek.
+> renkli kategori rozetleri, hover animasyonlu birincil buton, anlık arama),
+> `pytest` ile otomatik test altyapısı kuruldu ve kapsamlı klavye kısayolları
+> eklendi. Planlanan diğer tüm özellikler (işlem geçmişi, istatistikler,
+> Ollama destekli kategori önerisi) tamamlandı. Yeni bir fikir geldiğinde
+> buradan devam edilecek.
 
 ## 🎯 Projenin Amacı
 
@@ -57,6 +58,7 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [x] Görev önceliği (düşük/orta/yüksek) — ekleme sırasında seçilir, sonradan "Görev İşlemleri" menüsünden değiştirilebilir, satırlarda renkli rozetle gösterilir
 * [x] Son tarih (deadline) — opsiyonel tarih seçimi, "Görev İşlemleri" menüsünden değiştirilebilir, tamamlanmamış ve süresi geçmiş görevler kırmızı etiketle vurgulanır
 * [x] Otomatik testler (`pytest`) — `logic/gorev_yonetimi.py` ve `logic/kategori_onerici.py` için (Ollama çağrıları mock'lanır, geçici dosya tabanlı veritabanı fixture'ı kullanılır)
+* [x] Klavye kısayolları — görev ekleme/güncelleme/silme/tamamlama, kategori taşıma, öncelik/son tarih/tekrar değiştirme, pencere açma kısayolları ve liste/arama/filtre odaklama (bkz. "Klavye Kısayolları" bölümü)
 
 ## 🚧 Planlanan Özellikler
 
@@ -64,13 +66,36 @@ Proje başlangıçta Excel + VBA ile oluşturulan bir görev ve ödül sistemini
 * [ ] Çoklu kullanıcı / profil desteği (şimdilik bilinçli olarak ertelendi; `kullanici_id` kolonu ile ileride eklenecek)
 
 **Özellik fikirleri**
-* [ ] Klavye kısayolları (hızlı ekleme/silme)
 * [ ] Sistem tepsisi bildirimi / hatırlatma
 * [ ] Alt görevler (checklist)
 * [ ] Esnek tekrar kuralları (haftada N gün, belirli günler)
 * [ ] İstatistik/geçmişin CSV veya PDF olarak dışa aktarılması
 * [ ] Rozet / başarım sistemi (mevcut mücevher sistemine ek)
 * [ ] Ollama'nın kategori önerisi dışında (ör. haftalık özet) kullanılması
+
+## ⌨️ Klavye Kısayolları
+
+| Kısayol | İşlev |
+|---|---|
+| `Ctrl+N` | Görev Ekle |
+| `Ctrl+E` | Görev Güncelle |
+| `Delete` *(liste odaktayken)* | Görev Sil |
+| `Space` *(liste odaktayken)* | Seçili görevi tamamlandı/tamamlanmadı işaretle |
+| `Ctrl+K` | Kategori Taşı |
+| `Ctrl+O` | Öncelik Değiştir |
+| `Ctrl+D` | Son Tarih Belirle |
+| `Ctrl+T` | Tekrarı Aç/Kapat |
+| `Ctrl+Shift+K` | Kategorileri Düzenle |
+| `Ctrl+M` | Mağaza |
+| `Ctrl+Shift+C` | Çöp Kutusu |
+| `Ctrl+H` | İşlem Geçmişi |
+| `Ctrl+I` | İstatistikler |
+| `Ctrl+F` | Arama kutusuna odaklan |
+| `Ctrl+Shift+F` | Kategori filtresine odaklan |
+| `Ctrl+L` | Görev listesine odaklan (ardından Yukarı/Aşağı ok tuşlarıyla görev seçimi) |
+| `Ctrl+Q` | Uygulamayı kapat |
+
+Ayrıca onay diyaloglarında (örn. "Görevi Sil") **Tab** ile Evet/Hayır arası geçiş, **Enter** ile odaklanan/varsayılan butonu onaylama, **Esc** ile iptal — bunlar Qt'nin yerleşik diyalog davranışıdır, ek kod gerekmez.
 
 ## 💻 Kurulum
 
@@ -144,7 +169,7 @@ TaskManager/
 ├── pytest.ini                  # pytest yapılandırması (pythonpath, testpaths)
 ├── requirements-dev.txt        # Geliştirme bağımlılıkları (pytest)
 ├── ui/                         # Arayüz katmanı
-│   ├── ana_pencere.py          # Ana pencere (AnaPencere)
+│   ├── ana_pencere.py          # Ana pencere (AnaPencere) — klavye kısayolları dahil
 │   ├── animasyonlu_buton.py    # Hover'da metin rengi animasyonlu buton (AnimasyonluButon)
 │   ├── gorev_satiri_widget.py  # Görev listesi satırı: checkbox + ad + son tarih/öncelik/kategori rozetleri (GorevSatiriWidget)
 │   ├── son_tarih_dialog.py     # Görev için opsiyonel son tarih seçim diyaloğu (SonTarihDialog)
