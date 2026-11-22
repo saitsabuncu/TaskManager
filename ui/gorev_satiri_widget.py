@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtCore import QSize, pyqtSignal
 from PyQt6.QtWidgets import QCheckBox, QHBoxLayout, QLabel, QWidget
 
 # Kategori POZİSYONUNA göre renk (bkz. logic/kategori_onerici.py'deki aynı
@@ -61,6 +61,15 @@ class GorevSatiriWidget(QWidget):
         duzen.addWidget(self._son_tarih_etiketi)
         duzen.addWidget(self._oncelik_rozeti)
         duzen.addWidget(self._kategori_rozeti)
+
+    def sizeHint(self) -> QSize:
+        # Yükseklik her zaman sabit 44px döner; bu sayede ana_pencere.py
+        # içindeki item.setSizeHint(widget.sizeHint()) çağrısı, widget
+        # içeriği/layout'u henüz tam yerleşmemişken bile satırdan satıra
+        # farklı bir değer üretmez. setMinimumHeight(44) sadece bir alt
+        # sınırdı; asıl kullanılan değer bu metoddan gelir.
+        taban_boyut = super().sizeHint()
+        return QSize(taban_boyut.width(), 44)
 
     def gorevi_goster(
         self,
