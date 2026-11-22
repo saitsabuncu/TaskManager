@@ -16,6 +16,7 @@ from PyQt6.QtWidgets import (
     QMenu,
 )
 from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QShortcut
 
 from logic.gorev_yonetimi import GorevYonetimi, ONCELIK_ETIKETLERI
 from ui.cop_kutusu_penceresi import CopKutusuPenceresi
@@ -107,6 +108,9 @@ class AnaPencere(QWidget):
 
         self._kategori_filtresini_doldur()
         self._listeyi_yenile()
+        self._kategori_filtresini_doldur()
+        self._listeyi_yenile()
+        self._kisayollari_olustur()
 
     def _menu_butonu_olustur(
         self, baslik: str, eylemler: list[tuple[str, Callable[[], None]]]
@@ -124,6 +128,37 @@ class AnaPencere(QWidget):
         buton.setMenu(menu)
 
         return buton
+
+    def _kisayollari_olustur(self) -> None:
+        # Ctrl+... kombinasyonları pencere genelinde çalışır (metin
+        # kutularıyla çakışma riski yok). "Delete" ve "Space" ise sadece
+        # görev listesi odaktayken aktif olacak şekilde sınırlandırılır —
+        # aksi halde arama kutusunda yazarken de tetiklenirlerdi.
+        QShortcut(QKeySequence("Ctrl+N"), self, activated=self.gorev_ekle)
+        QShortcut(QKeySequence("Ctrl+E"), self, activated=self.gorev_guncelle)
+        QShortcut(QKeySequence("Ctrl+K"), self, activated=self.kategori_tasi)
+        QShortcut(QKeySequence("Ctrl+O"), self, activated=self.oncelik_degistir)
+        QShortcut(QKeySequence("Ctrl+D"), self, activated=self.son_tarih_belirle)
+        QShortcut(QKeySequence("Ctrl+T"), self, activated=self.tekrar_durumunu_degistir)
+        QShortcut(QKeySequence("Ctrl+Shift+K"), self, activated=self.kategorileri_duzenle)
+        QShortcut(QKeySequence("Ctrl+M"), self, activated=self.magazayi_ac)
+        QShortcut(QKeySequence("Ctrl+Shift+C"), self, activated=self.cop_kutusunu_ac)
+        QShortcut(QKeySequence("Ctrl+H"), self, activated=self.islem_gecmisini_ac)
+        QShortcut(QKeySequence("Ctrl+I"), self, activated=self.istatistikleri_ac)
+        QShortcut(QKeySequence("Ctrl+F"), self, activated=self.arama_kutusu.setFocus)
+        QShortcut(
+            QKeySequence("Ctrl+Shift+F"), self, activated=self.kategori_filtresi.setFocus
+        )
+        QShortcut(QKeySequence("Ctrl+L"), self, activated=self.gorev_listesi.setFocus)
+        QShortcut(QKeySequence("Ctrl+Q"), self, activated=self.close)
+
+        sil_kisayolu = QShortcut(QKeySequence("Delete"), self.gorev_listesi)
+        sil_kisayolu.setContext(Qt.ShortcutContext.WidgetShortcut)
+        sil_kisayolu.activated.connect(self.gorev_sil)
+
+        tamamla_kisayolu = QShortcut(QKeySequence(Qt.Key.Key_Space), self.gorev_listesi)
+        tamamla_kisayolu.setContext(Qt.ShortcutContext.WidgetShortcut)
+        tamamla_kisayolu.activated.connect(self._secili_gorevi_tamamlanma_degistir)
 
     def _kullanici_adini_gerekirse_sor(self):
         # İlk açılışta kullanıcı adı henüz kaydedilmemişse sorulur; bir kere
@@ -614,6 +649,17 @@ class AnaPencere(QWidget):
         self._bakiye_etiketini_guncelle()
         self._satiri_guncelle(item)
 
+    def _secili_gorevi_tamamlanma_degistir(self) -> None:
+        # Space kısayolu: mouse ile checkbox'a tıklamanın klavye karşılığı.
+        # Gerçek durum değişikliği GorevSatiriWidget'ın toggled sinyali
+        # üzerinden _satir_tamamlandi_degisti'ye akar (bkz. _satir_ekle).
+        secili_item = self.gorev_listesi.currentItem()
+        if secili_item is None:
+            return
+
+        widget: GorevSatiriWidget = self.gorev_listesi.itemWidget(secili_item)
+        widget.tamamlanma_durumunu_degistir()
+        
     def _bakiye_etiketini_guncelle(self):
         self.bakiye_etiketi.setText(
             f"💎 Mücevher Bakiyesi: {self.gorev_yonetimi.mucevher_bakiyesi}"

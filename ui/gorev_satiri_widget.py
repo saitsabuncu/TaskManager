@@ -137,4 +137,8 @@ class GorevSatiriWidget(QWidget):
             )
         else:
             self._son_tarih_etiketi.setText("")
-            self._son_tarih_etiketi.setStyleSheet("")    
+            self._son_tarih_etiketi.setStyleSheet("") 
+
+
+    def tamamlanma_durumunu_degistir(self) -> None:
+        self._checkbox.toggle()           
